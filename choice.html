@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择角色 - 和事宝</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: SimSun, '宋体', serif;
+            background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+
+        .shape:nth-child(1) {
+            width: 150px;
+            height: 150px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 100px;
+            height: 100px;
+            top: 20%;
+            right: 15%;
+            animation-delay: -5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 15%;
+            left: 20%;
+            animation-delay: -8s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(30px, -50px) rotate(120deg);
+            }
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            margin: 50px auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .role-title {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: fadeInDown 1s ease;
+        }
+
+        .role-cards {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            perspective: 1000px;
+        }
+
+        .role-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 300px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 1s ease;
+        }
+
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .role-card:hover {
+            transform: translateY(-15px) rotateY(5deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .role-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .role-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            transform-origin: center;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .role-card:hover .role-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .role-name {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .role-name::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #3498db;
+            transform: translateX(-50%);
+            transition: width 0.3s ease;
+        }
+
+        .role-card:hover .role-name::after {
+            width: 100%;
+        }
+
+        .role-description {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <h1 class="role-title">请选择您的角色</h1>
+        <div class="role-cards">
+            <div class="role-card" onclick="window.location.href='chat.html?role=child'">
+                <div class="role-icon">👶</div>
+                <h2 class="role-name">我是孩子</h2>
+                <p class="role-description">在这里，你可以倾诉烦恼，寻求帮助</p>
+            </div>
+            <div class="role-card" onclick="window.location.href='chat.html?role=parent'">
+                <div class="role-icon">👨‍👩</div>
+                <h2 class="role-name">我是父母</h2>
+                <p class="role-description">在这里，你可以了解孩子，改善关系</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亲子性格匹配分析 - 和事宝</title>
+    <script src="./personality_questions.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #f5f7fa;
+            --text-color: #2c3e50;
+            --border-radius: 15px;
+            --shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: SimSun, '宋体', serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .test-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .test-header h1 {
+            font-size: 2rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .test-header p {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .question-container {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option-button {
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        .option-button:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .option-button.selected {
+            border-color: var(--primary-color);
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .likert-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding: 0 1rem;
+        }
+
+        .likert-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .likert-radio {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .likert-radio:checked {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+        }
+
+        .likert-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .nav-button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .nav-button:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .back-button {
+            background: #95a5a6;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .role-selection {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 3rem 0;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .role-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 200px;
+        }
+
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .role-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .role-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .role-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .role-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            animation: fadeInRight 0.5s ease;
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .role-indicator:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .role-indicator .role-icon {
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .role-indicator .role-text {
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .results-container {
+            display: none;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .results-section {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .results-chart {
+            margin: 2rem 0;
+            height: 300px;
+        }
+
+        .trait-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .trait-label {
+            width: 120px;
+            font-size: 0.9rem;
+        }
+
+        .trait-progress {
+            flex-grow: 1;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .trait-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width 1s ease;
+        }
+
+        .trait-value {
+            width: 50px;
+            text-align: right;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+
+        .role-title-result {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .role-icon {
+            font-size: 2rem;
+            margin-right: 0.5rem;
+        }
+
+        .mbti-type {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .mbti-description {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .mbti-details {
+            margin-top: 0.5rem;
+        }
+
+        .mbti-trait {
+            margin-bottom: 0.25rem;
+        }
+
+        .disc-description {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .big5-description {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .communicationTips {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="role-indicator" id="roleIndicator" onclick="startPersonalityTest()">
+        <div class="role-icon" id="roleIcon"></div>
+        <div class="role-text" id="roleText"></div>
+    </div>
+
+    <div class="container">
+        <div class="test-header">
+            <h1>亲子性格匹配分析</h1>
+            <p>通过科学的性格测评，帮助您更好地理解彼此，提升沟通效果</p>
+        </div>
+
+        <div id="roleSelection" class="role-selection">
+            <div class="role-card" onclick="startTest('child')">
+                <div class="role-icon">👶</div>
+                <div class="role-title">我是孩子</div>
+                <div class="role-description">适合6-15岁的青少年，帮助了解自己的性格特点</div>
+            </div>
+            <div class="role-card" onclick="startTest('parent')">
+                <div class="role-icon">👨‍👩</div>
+                <div class="role-title">我是家长</div>
+                <div class="role-description">适合家长，了解自己的教育风格与沟通方式</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <div class="question-container" id="questionContainer" style="display: none;">
+            <div class="question-text" id="questionText"></div>
+            <div class="options-container" id="optionsContainer"></div>
+            <div class="navigation-buttons">
+                <button class="nav-button back-button" id="prevButton" onclick="previousQuestion()">上一题</button>
+                <button class="nav-button" id="nextButton" onclick="nextQuestion()">下一题</button>
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <div class="results-section">
+                <h2 class="results-title">MBTI 性格类型</h2>
+                <div id="mbtiResult"></div>
+            </div>
+            <div class="results-section" id="discSection">
+                <h2 class="results-title">DISC 行为风格</h2>
+                <div class="results-chart" id="discChart"></div>
+            </div>
+            <div class="results-section" id="bigFiveSection">
+                <h2 class="results-title">大五人格特质</h2>
+                <div class="results-chart" id="bigFiveChart"></div>
+            </div>
+            <div class="results-section">
+                <div id="communicationTips"></div>
+            </div>
+            <div class="navigation-buttons">
+                <button class="nav-button back-button" onclick="window.location.reload()">重新测试</button>
+                <button class="nav-button" onclick="window.location.href='chat.html'">开始对话</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化全局状态
+        window.currentRole = localStorage.getItem('selectedRole') || 'child';
+        window.currentSection = 'mbti';
+        window.currentQuestionIndex = 0;
+        window.answers = {
+            mbti: [],
+            disc: [],
+            bigFive: []
+        };
+
+        // 页面加载完成后直接开始测试
+        window.addEventListener('DOMContentLoaded', function() {
+            // 隐藏角色选择，显示问题容器
+            document.getElementById('roleSelection').style.display = 'none';
+            document.getElementById('questionContainer').style.display = 'block';
+            
+            // 显示角色指示器
+            showRoleIndicator(window.currentRole);
+            
+            // 开始测试
+            startPersonalityTest();
+        });
+
+        function showRoleIndicator(role) {
+            const roleIndicator = document.getElementById('roleIndicator');
+            const roleIcon = document.getElementById('roleIcon');
+            const roleText = document.getElementById('roleText');
+            
+            if (role === 'child') {
+                roleIcon.textContent = '👶';
+                roleText.textContent = '孩子视角';
+            } else {
+                roleIcon.textContent = '👨‍👩';
+                roleText.textContent = '家长视角';
+            }
+            
+            roleIndicator.style.display = 'flex';
+        }
+
+        window.startTest = function(role) {
+            window.currentRole = role;
+            // 保存角色选择
+            localStorage.setItem('selectedRole', role);
+            showRoleIndicator(role);
+            
+            // 隐藏角色选择，显示问题
+            document.getElementById('roleSelection').style.display = 'none';
+            document.getElementById('questionContainer').style.display = 'block';
+            
+            // 开始测试
+            startPersonalityTest();
+        };
+
+        window.startPersonalityTest = function() {
+            // 重置测试状态
+            window.currentSection = 'mbti';
+            window.currentQuestionIndex = 0;
+            window.answers = {
+                mbti: [],
+                disc: [],
+                bigFive: []
+            };
+            
+            showQuestion();
+        };
+
+        window.showQuestion = function() {
+            const question = getCurrentQuestion();
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            if (question.type === 'likert5') {
+                const likertScale = document.createElement('div');
+                likertScale.className = 'likert-scale';
+                
+                for (let i = 1; i <= 5; i++) {
+                    const option = document.createElement('div');
+                    option.className = 'likert-option';
+                    
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = 'likert';
+                    radio.value = i;
+                    radio.className = 'likert-radio';
+                    radio.onclick = () => selectOption(i);
+                    
+                    const label = document.createElement('label');
+                    label.className = 'likert-label';
+                    label.textContent = getLikertLabel(i);
+                    
+                    option.appendChild(radio);
+                    option.appendChild(label);
+                    likertScale.appendChild(option);
+                }
+                
+                optionsContainer.appendChild(likertScale);
+            } else {
+                question.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'option-button';
+                    button.textContent = option.text;
+                    button.onclick = () => selectOption(option.value);
+                    optionsContainer.appendChild(button);
+                });
+            }
+
+            updateNavigationButtons();
+            updateProgressBar();
+        };
+
+        window.getCurrentQuestion = function() {
+            return window.questionBank[window.currentRole][window.currentSection][window.currentQuestionIndex];
+        };
+
+        window.selectOption = function(value) {
+            const question = getCurrentQuestion();
+            const answer = {
+                questionId: question.id,
+                value: value,
+                dimension: question.dimension
+            };
+
+            if (question.type === 'likert5') {
+                answer.score = value;
+            }
+
+            // 更新答案
+            const existingAnswerIndex = window.answers[window.currentSection].findIndex(
+                a => a.questionId === question.id
+            );
+
+            if (existingAnswerIndex !== -1) {
+                window.answers[window.currentSection][existingAnswerIndex] = answer;
+            } else {
+                window.answers[window.currentSection].push(answer);
+            }
+
+            // 更新UI
+            const options = document.querySelectorAll('.option-button');
+            options.forEach(option => option.classList.remove('selected'));
+            if (event && event.target && question.type !== 'likert5') {
+                event.target.classList.add('selected');
+            }
+
+            // 启用下一题按钮
+            document.getElementById('nextButton').disabled = false;
+        };
+
+        window.getLikertLabel = function(value) {
+            switch(value) {
+                case 1: return '完全不同意';
+                case 2: return '不太同意';
+                case 3: return '一般';
+                case 4: return '比较同意';
+                case 5: return '完全同意';
+            }
+        };
+
+        window.previousQuestion = function() {
+            if (window.currentQuestionIndex > 0) {
+                window.currentQuestionIndex--;
+            } else if (window.currentSection === 'disc') {
+                window.currentSection = 'mbti';
+                window.currentQuestionIndex = window.questionBank[window.currentRole].mbti.length - 1;
+            } else if (window.currentSection === 'bigFive') {
+                window.currentSection = 'disc';
+                window.currentQuestionIndex = window.questionBank[window.currentRole].disc.length - 1;
+            }
+            showQuestion();
+        };
+
+        window.nextQuestion = function() {
+            const currentSectionQuestions = window.questionBank[window.currentRole][window.currentSection];
+            
+            if (window.currentQuestionIndex < currentSectionQuestions.length - 1) {
+                window.currentQuestionIndex++;
+                showQuestion();
+            } else if (window.currentSection === 'mbti') {
+                window.currentSection = 'disc';
+                window.currentQuestionIndex = 0;
+                showQuestion();
+            } else if (window.currentSection === 'disc') {
+                window.currentSection = 'bigFive';
+                window.currentQuestionIndex = 0;
+                showQuestion();
+            } else {
+                showResults();
+            }
+        };
+
+        window.updateNavigationButtons = function() {
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            
+            prevButton.disabled = window.currentQuestionIndex === 0 && window.currentSection === 'mbti';
+            nextButton.disabled = !window.answers[window.currentSection].some(
+                a => a.questionId === getCurrentQuestion().id
+            );
+        };
+
+        window.updateProgressBar = function() {
+            const totalQuestions = 
+                window.questionBank[window.currentRole].mbti.length + 
+                window.questionBank[window.currentRole].disc.length + 
+                window.questionBank[window.currentRole].bigFive.length;
+            
+            const completedQuestions = 
+                (window.currentSection === 'disc' ? window.questionBank[window.currentRole].mbti.length : 0) +
+                (window.currentSection === 'bigFive' ? window.questionBank[window.currentRole].mbti.length + window.questionBank[window.currentRole].disc.length : 0) +
+                window.currentQuestionIndex;
+            
+            const progress = (completedQuestions / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        };
+
+        window.showResults = function() {
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+
+            // 获取角色
+            const role = window.currentRole;
+            const roleTitleElem = document.createElement('div');
+            roleTitleElem.className = 'role-title-result';
+            roleTitleElem.innerHTML = role === 'child' 
+                ? '<span class="role-icon">👶</span> 孩子性格分析报告' 
+                : '<span class="role-icon">👨‍👩</span> 家长育儿风格分析报告';
+            
+            // 添加角色标题
+            const resultContainer = document.getElementById('resultsContainer');
+            resultContainer.insertBefore(roleTitleElem, resultContainer.firstChild);
+
+            // 分析 MBTI 结果
+            const mbtiResult = window.analyzeMBTI(window.answers.mbti);
+            const mbtiTypeDesc = getMBTIDescription(mbtiResult.E_I + mbtiResult.S_N + mbtiResult.T_F + mbtiResult.J_P, role);
+            document.getElementById('mbtiResult').innerHTML = `
+                <div class="mbti-type">${mbtiResult.E_I}${mbtiResult.S_N}${mbtiResult.T_F}${mbtiResult.J_P}</div>
+                <div class="mbti-description">${mbtiTypeDesc}</div>
+                <div class="mbti-details">
+                    <div class="mbti-trait">${mbtiResult.E_I === 'E' ? '外向' : '内向'} (${mbtiResult.E_I})</div>
+                    <div class="mbti-trait">${mbtiResult.S_N === 'S' ? '实感' : '直觉'} (${mbtiResult.S_N})</div>
+                    <div class="mbti-trait">${mbtiResult.T_F === 'T' ? '理性' : '感性'} (${mbtiResult.T_F})</div>
+                    <div class="mbti-trait">${mbtiResult.J_P === 'J' ? '计划' : '随性'} (${mbtiResult.J_P})</div>
+                </div>
+            `;
+
+            // 分析 DISC 结果
+            const discResult = window.analyzeDISC(window.answers.disc);
+            const discChart = document.getElementById('discChart');
+            renderTraitBars(discChart, discResult);
+            
+            // 添加DISC描述
+            const discDescElem = document.createElement('div');
+            discDescElem.className = 'disc-description';
+            discDescElem.innerHTML = getDISCDescription(discResult, role);
+            document.getElementById('discSection').appendChild(discDescElem);
+
+            // 分析大五人格结果
+            const bigFiveResult = window.analyzeBigFive(window.answers.bigFive);
+            const bigFiveChart = document.getElementById('bigFiveChart');
+            renderTraitBars(bigFiveChart, bigFiveResult);
+            
+            // 添加大五人格描述
+            const big5DescElem = document.createElement('div');
+            big5DescElem.className = 'big5-description';
+            big5DescElem.innerHTML = getBig5Description(bigFiveResult, role);
+            document.getElementById('bigFiveSection').appendChild(big5DescElem);
+
+            // 生成沟通建议
+            generateCommunicationTips(role, mbtiResult, discResult, bigFiveResult);
+
+            // 保存结果到 localStorage
+            localStorage.setItem('personalityTestResults', JSON.stringify({
+                role: window.currentRole,
+                mbti: mbtiResult,
+                disc: discResult,
+                bigFive: bigFiveResult,
+                timestamp: new Date().toISOString()
+            }));
+        };
+
+        window.renderTraitBars = function(container, traits) {
+            container.innerHTML = '';
+            Object.entries(traits).forEach(([trait, value]) => {
+                const maxValue = trait.startsWith('big5_') ? 5 : 4;
+                const percentage = (value / maxValue) * 100;
+                
+                const traitBar = document.createElement('div');
+                traitBar.className = 'trait-bar';
+                
+                const label = document.createElement('div');
+                label.className = 'trait-label';
+                label.textContent = trait;
+                
+                const progress = document.createElement('div');
+                progress.className = 'trait-progress';
+                
+                const fill = document.createElement('div');
+                fill.className = 'trait-fill';
+                fill.style.width = `${percentage}%`;
+                
+                const valueLabel = document.createElement('div');
+                valueLabel.className = 'trait-value';
+                valueLabel.textContent = value.toFixed(1);
+                
+                progress.appendChild(fill);
+                traitBar.appendChild(label);
+                traitBar.appendChild(progress);
+                traitBar.appendChild(valueLabel);
+                container.appendChild(traitBar);
+            });
+        };
+
+        // 根据角色获取MBTI描述
+        function getMBTIDescription(type, role) {
+            const descriptions = {
+                child: {
+                    'ESTJ': '你是一个负责任、实际的人，喜欢按规则做事，擅长组织和带领团队。',
+                    'ESTP': '你是个活跃、实际的问题解决者，喜欢尝试新事物，享受冒险和挑战。',
+                    'ESFJ': '你友善、乐于助人，重视和谐关系，喜欢照顾他人的需要和感受。',
+                    'ESFP': '你热情活泼，喜欢与人分享快乐，擅长发现生活中的乐趣和美好。',
+                    'ENTJ': '你思维敏捷，有领导才能，喜欢制定计划和目标，追求效率和成就。',
+                    'ENTP': '你充满创意和好奇心，喜欢探索各种可能性，擅长思考和辩论。',
+                    'ENFJ': '你善解人意，有感染力，关心他人成长，善于鼓励和激励他人。',
+                    'ENFP': '你热情洋溢，富有想象力，喜欢尝试新点子，重视自由和创新。',
+                    'ISTJ': '你认真负责，重视秩序和规则，做事有条理，值得信赖。',
+                    'ISTP': '你冷静、灵活，善于用工具解决问题，喜欢理解事物如何运作。',
+                    'ISFJ': '你温和、细心，乐于帮助他人，重视传统和稳定，非常可靠。',
+                    'ISFP': '你温和、敏感，欣赏美好事物，尊重个人空间，做事有自己的节奏。',
+                    'INTJ': '你有独立思考能力，善于规划未来，追求知识和能力的提升。',
+                    'INTP': '你思维独特，喜欢分析复杂问题，追求逻辑和理解，乐于探索新概念。',
+                    'INFJ': '你有洞察力，理想主义，关注他人内心世界，追求有意义的目标。',
+                    'INFP': '你富有同情心，重视个人价值观，有创意，关注内心和理想。'
+                },
+                parent: {
+                    'ESTJ': '您注重规则和秩序，教育孩子时条理清晰，注重培养责任感和纪律性。',
+                    'ESTP': '您灵活务实，鼓励孩子动手实践，善于帮助孩子解决实际问题。',
+                    'ESFJ': '您关心孩子的情感需求，重视家庭和谐，善于创造温馨的家庭环境。',
+                    'ESFP': '您活泼开朗，善于与孩子一起享受生活乐趣，教育方式轻松有趣。',
+                    'ENTJ': '您有计划性和领导力，对孩子期望较高，注重培养目标感和成就感。',
+                    'ENTP': '您思维灵活，鼓励孩子提问和探索，善于激发孩子的创造力和好奇心。',
+                    'ENFJ': '您善于理解和鼓励孩子，重视孩子的成长和发展，有很强的感染力。',
+                    'ENFP': '您热情且富有创意，尊重孩子的独特性，教育方式灵活多变。',
+                    'ISTJ': '您可靠且有条理，注重传统价值观，教育方式一致且有规律。',
+                    'ISTP': '您冷静且实际，尊重孩子的独立性，善于教导解决问题的技能。',
+                    'ISFJ': '您细心且有耐心，关注孩子的日常需求，创造稳定安全的家庭环境。',
+                    'ISFP': '您温和且灵活，尊重孩子的感受，不强求，给予孩子成长的空间。',
+                    'INTJ': '您有远见和独立思考能力，注重培养孩子的逻辑思维和规划能力。',
+                    'INTP': '您思维深入，鼓励孩子独立思考，重视知识和理解力的培养。',
+                    'INFJ': '您有理想主义倾向，关注孩子的内心世界，追求有意义的教育方式。',
+                    'INFP': '您尊重孩子的个性和价值观，教育方式温和，关注孩子的情感发展。'
+                }
+            };
+            
+            return descriptions[role][type] || '无法获取详细描述';
+        }
+
+        // 根据角色获取DISC描述
+        function getDISCDescription(discResult, role) {
+            // 找出主导特质
+            let dominantTrait = '';
+            let maxScore = 0;
+            
+            for (const [trait, score] of Object.entries(discResult)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    dominantTrait = trait;
+                }
+            }
+            
+            const descriptions = {
+                child: {
+                    'D': '你有很强的自主性和决断力，喜欢掌控局面，有领导才能，但有时可能显得有些强势。',
+                    'I': '你活泼开朗，善于交际，能够感染周围的人，喜欢成为焦点，但有时可能不够专注。',
+                    'S': '你温和稳定，有耐心，重视和谐关系，可靠且忠诚，但有时可能不太喜欢变化。',
+                    'C': '你做事认真仔细，注重质量和准确性，有条理，但有时可能过于追求完美。'
+                },
+                parent: {
+                    'D': '您的教育风格果断直接，设定明确目标，追求高效率，但需要注意倾听孩子的想法。',
+                    'I': '您的教育风格热情活泼，善于鼓励和表扬，营造积极氛围，但需要保持一致性。',
+                    'S': '您的教育风格温和耐心，提供稳定支持，重视家庭和谐，但可以适当增加新尝试。',
+                    'C': '您的教育风格注重细节和规则，有计划和条理，但可以适当放松对完美的追求。'
+                }
+            };
+            
+            return descriptions[role][dominantTrait] || '无法获取详细描述';
+        }
+
+        // 根据角色获取大五人格描述
+        function getBig5Description(bigFiveResult, role) {
+            let highTraits = [];
+            const threshold = role === 'child' ? 3 : 3; // 设置阈值
+            
+            for (const [trait, score] of Object.entries(bigFiveResult)) {
+                if (score > threshold) {
+                    highTraits.push(trait);
+                }
+            }
+            
+            if (highTraits.length === 0) {
+                return role === 'child' 
+                    ? '你的性格特质比较均衡，没有特别突出的方面。' 
+                    : '您的性格特质比较均衡，没有特别突出的方面。';
+            }
+            
+            const descriptions = {
+                child: {
+                    '外向性': '你乐于社交，喜欢与人交流，有活力和热情。',
+                    '宜人性': '你富有同情心，关心他人感受，愿意帮助别人。',
+                    '尽责性': '你有条理，做事认真负责，能够坚持完成任务。',
+                    '情绪稳定性': '你能够很好地控制情绪，面对压力时保持冷静。',
+                    '开放性': '你好奇心强，喜欢尝试新事物，思维灵活有创意。'
+                },
+                parent: {
+                    '外向性': '您乐于社交互动，教育方式活跃开放，善于建立广泛的社交网络。',
+                    '宜人性': '您富有同理心，尊重孩子的感受，创造温暖和谐的家庭氛围。',
+                    '尽责性': '您教育方式有条理和计划性，注重培养孩子的责任感和自律能力。',
+                    '情绪稳定性': '您能够理性应对育儿压力，情绪稳定，为孩子树立良好榜样。',
+                    '开放性': '您思维开放，鼓励孩子探索和创新，接纳多元化的观点和体验。'
+                }
+            };
+            
+            let result = role === 'child' ? '你的突出特质：' : '您的突出特质：';
+            highTraits.forEach((trait, index) => {
+                result += descriptions[role][trait];
+                if (index < highTraits.length - 1) {
+                    result += ' ';
+                }
+            });
+            
+            return result;
+        }
+
+        // 生成沟通建议
+        function generateCommunicationTips(role, mbtiResult, discResult, bigFiveResult) {
+            const communicationTipsElem = document.getElementById('communicationTips');
+            
+            let tips = '<h3>' + (role === 'child' ? '与家长沟通建议' : '与孩子沟通建议') + '</h3><ul>';
+            
+            // 基于MBTI的建议
+            const mbtiType = mbtiResult.E_I + mbtiResult.S_N + mbtiResult.T_F + mbtiResult.J_P;
+            if (role === 'child') {
+                if (mbtiResult.E_I === 'I') {
+                    tips += '<li>你可能需要更多的独处时间，在与家长交流前先整理好自己的想法。</li>';
+                } else {
+                    tips += '<li>你喜欢通过交流表达自己，可以主动与家长分享你的想法和感受。</li>';
+                }
+                
+                if (mbtiResult.T_F === 'T') {
+                    tips += '<li>在讨论问题时，尝试考虑家长的感受，而不仅仅关注事实和逻辑。</li>';
+                } else {
+                    tips += '<li>当你因为情感因素做决定时，可以尝试向家长解释你的感受。</li>';
+                }
+            } else {
+                if (mbtiResult.E_I === 'I') {
+                    tips += '<li>给孩子一些思考和独处的空间，不要总是期望即时的反馈。</li>';
+                } else {
+                    tips += '<li>多创造交流的机会，支持孩子通过讨论来理清思路。</li>';
+                }
+                
+                if (mbtiResult.T_F === 'T') {
+                    tips += '<li>在与孩子交流时，不仅要关注逻辑和事实，还要关注情感因素。</li>';
+                } else {
+                    tips += '<li>重视孩子的情感表达，即使有时看起来不够理性。</li>';
+                }
+            }
+            
+            // 基于DISC的建议
+            let dominantDisc = '';
+            let maxScore = 0;
+            for (const [trait, score] of Object.entries(discResult)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    dominantDisc = trait;
+                }
+            }
+            
+            if (role === 'child') {
+                if (dominantDisc === 'D') {
+                    tips += '<li>在表达自己的观点时，给家长留出表达意见的空间。</li>';
+                } else if (dominantDisc === 'I') {
+                    tips += '<li>与家长讨论重要事项时，尝试更有条理地表达，关注细节。</li>';
+                } else if (dominantDisc === 'S') {
+                    tips += '<li>当你对家长的建议有不同想法时，可以更直接地表达出来。</li>';
+                } else if (dominantDisc === 'C') {
+                    tips += '<li>与家长交流时，不必对每个细节都过分关注，有时需要看大局。</li>';
+                }
+            } else {
+                if (dominantDisc === 'D') {
+                    tips += '<li>放慢节奏，给孩子充分表达的时间，避免过于指令性的沟通。</li>';
+                } else if (dominantDisc === 'I') {
+                    tips += '<li>与孩子交流时，确保传达明确的信息，而不仅仅是热情的表达。</li>';
+                } else if (dominantDisc === 'S') {
+                    tips += '<li>鼓励孩子表达自己的想法，主动询问而不仅仅等待他们开口。</li>';
+                } else if (dominantDisc === 'C') {
+                    tips += '<li>与孩子交流时，不必过分强调细节和完美，多关注情感连接。</li>';
+                }
+            }
+            
+            tips += '</ul>';
+            communicationTipsElem.innerHTML = tips;
+        }
+    </script>
+</body>
+</html> 

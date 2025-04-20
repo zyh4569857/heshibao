@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭沟通调解报告 - 和事宝</title>
+    <!-- 修改脚本引入顺序和版本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <!-- 添加字体支持 -->
+    <script src="https://unpkg.com/downloadjs@1.4.7/download.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --primary-color: #1d1d1f;
+            --secondary-color: #86868b;
+            --accent-color: #0066cc;
+            --background-color: #f5f5f7;
+            --card-background: rgba(255, 255, 255, 0.85);
+            --title-color: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, 
+                #fbfbfd 0%,
+                #f5f5f7 20%,
+                #ebebeb 40%,
+                #f1f1f3 60%,
+                #fbfbfd 80%
+            );
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 添加动态渐变背景 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center,
+                rgba(146, 168, 209, 0.08) 0%,
+                rgba(207, 220, 243, 0.08) 30%,
+                rgba(176, 188, 209, 0.08) 60%
+            );
+            animation: rotate 60s linear infinite;
+            z-index: -1;
+        }
+
+        /* 添加装饰性渐变球 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 10%;
+            right: -15%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle at 30% 30%,
+                rgba(88, 156, 255, 0.08) 0%,
+                rgba(114, 168, 243, 0.08) 45%,
+                rgba(139, 178, 235, 0.05) 100%
+            );
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .report-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 3rem auto;
+            padding: 3rem;
+            background: var(--card-background);
+            border-radius: 30px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.05),
+                0 0 0 1px rgba(255,255,255,0.5) inset;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 添加容器装饰效果 */
+        .report-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,0.5) 50%,
+                rgba(255,255,255,0) 100%
+            );
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .report-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                rgba(0,102,204,0.2),
+                rgba(0,102,204,0.8) 50%,
+                rgba(0,102,204,0.2)
+            );
+            border-radius: 3px;
+        }
+
+        .report-header h1 {
+            font-family: SimSun, "宋体", serif;
+            font-size: 14pt; /* 四号字体大约是14pt */
+            font-weight: 700;
+            color: var(--title-color);
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+        }
+
+        .meta-info {
+            font-family: SimSun, "宋体", serif;
+            color: var(--secondary-color);
+            font-size: 12pt;
+            margin: 0.7rem 0;
+            font-weight: normal;
+            letter-spacing: 0.3px;
+        }
+
+        .report-content {
+            font-family: SimSun, "宋体", serif;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            color: var(--primary-color);
+            padding: 2rem 0;
+            font-size: 12pt;
+            font-weight: normal;
+        }
+
+        .report-content h2, .report-content h3 {
+            font-family: SimSun, "宋体", serif;
+            font-weight: bold;
+            margin: 2rem 0 1rem 0;
+            color: var(--primary-color);
+            font-size: 13pt;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            padding: 0.8rem 2.5rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0));
+            transform: translateY(-100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover::before {
+            transform: translateY(0);
+        }
+
+        .back-button {
+            background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%);
+            color: white;
+        }
+
+        .download-button {
+            background: linear-gradient(135deg, #0066cc 0%, #0077ed 100%);
+            color: white;
+        }
+
+        .print-button {
+            background: rgba(255,255,255,0.9);
+            color: var(--primary-color);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 20px;
+            margin: 2rem 0;
+        }
+
+        .error-message h2 {
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+
+        @media print {
+            .button-group {
+                display: none !important;
+            }
+            .report-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 20px !important;
+            }
+            .report-header::after {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .report-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            .button-group {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* 添加 Mermaid 图表样式 */
+        .mermaid {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 调整图表中的文字样式 */
+        .mermaid text {
+            font-family: SimSun, "宋体", serif !important;
+            font-size: 12pt !important;
+        }
+
+        .mermaid .taskText {
+            font-family: SimSun, "宋体", serif !important;
+            font-size: 11pt !important;
+        }
+
+        .mermaid .sectionTitle {
+            font-family: SimSun, "宋体", serif !important;
+            font-size: 13pt !important;
+            font-weight: bold !important;
+        }
+
+        /* 添加弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h2 {
+            font-family: SimSun, "宋体", serif;
+            font-size: 18pt;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .modal-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-card {
+            background: var(--background-color);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .option-card.selected {
+            border-color: var(--accent-color);
+            background: rgba(0, 102, 204, 0.05);
+        }
+
+        .option-title {
+            font-family: SimSun, "宋体", serif;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .option-price {
+            font-family: SimSun, "宋体", serif;
+            font-size: 12pt;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .option-description {
+            font-family: SimSun, "宋体", serif;
+            font-size: 11pt;
+            color: var(--secondary-color);
+            line-height: 1.4;
+        }
+
+        .modal-footer {
+            text-align: center;
+        }
+
+        .modal-btn {
+            padding: 0.8rem 2.5rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .modal-btn:disabled {
+            background: var(--secondary-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 添加版本标识样式 */
+        .version-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .version-badge.brief {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .version-badge.detailed {
+            background: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+
+        /* 添加内容容器样式 */
+        .report-content-container {
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 1rem;
+        }
+
+        .report-content-container.brief {
+            background: rgba(52, 152, 219, 0.05);
+            border: 1px solid rgba(52, 152, 219, 0.1);
+        }
+
+        .report-content-container.detailed {
+            background: rgba(46, 204, 113, 0.05);
+            border: 1px solid rgba(46, 204, 113, 0.1);
+        }
+
+        /* 修改报告内容样式 */
+        .report-content {
+            font-family: SimSun, "宋体", serif;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            color: var(--primary-color);
+            font-size: 12pt;
+            font-weight: normal;
+        }
+
+        .report-content h2, 
+        .report-content h3 {
+            font-family: SimSun, "宋体", serif;
+            font-weight: bold;
+            margin: 1.5rem 0 1rem 0;
+            color: var(--primary-color);
+        }
+
+        .report-content.brief h2 {
+            color: #3498db;
+        }
+
+        .report-content.detailed h2 {
+            color: #27ae60;
+        }
+
+        /* 添加分隔线样式 */
+        .report-content-container::before {
+            content: '';
+            display: block;
+            height: 2px;
+            background: linear-gradient(to right,
+                rgba(0, 0, 0, 0.05),
+                rgba(0, 0, 0, 0.1) 50%,
+                rgba(0, 0, 0, 0.05)
+            );
+            margin-bottom: 2rem;
+            border-radius: 2px;
+        }
+
+        /* 打印样式调整 */
+        @media print {
+            .version-badge {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .report-content-container {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                border: 1px solid #eee;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container" id="reportContainer">
+        <div class="report-header">
+            <h1>家庭沟通调解报告</h1>
+            <p id="reportTimestamp" class="meta-info"></p>
+            <p id="reportRole" class="meta-info"></p>
+        </div>
+        <div class="report-content" id="reportContent">
+            <!-- 报告内容将在这里显示 -->
+        </div>
+        <div class="button-group">
+            <button onclick="window.location.href='chat.html'" class="btn back-button">返回对话</button>
+            <button onclick="downloadPDF()" class="btn download-button">下载报告</button>
+            <button onclick="window.print()" class="btn print-button">打印报告</button>
+        </div>
+    </div>
+
+    <script>
+        // 配置 Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            gantt: {
+                titleTopMargin: 25,
+                barHeight: 20,
+                barGap: 4,
+                topPadding: 50,
+                sidePadding: 50,
+                fontSize: 12,
+                numberSectionStyles: 3,
+                axisFormat: '%Y-%m-%d'
+            }
+        });
+
+        let reportData = null;
+
+        // 初始化报告数据
+        function initReportData() {
+            try {
+                // 从 localStorage 获取数据
+                const reportDataStr = localStorage.getItem('reportData');
+                
+                if (!reportDataStr) {
+                    throw new Error('未找到报告数据');
+                }
+
+                // 解析数据
+                reportData = JSON.parse(reportDataStr);
+                
+                if (!reportData || !reportData.content) {
+                    throw new Error('报告数据无效');
+                }
+
+                // 显示报告内容
+                displayReport();
+
+            } catch (error) {
+                // 显示错误信息
+                document.getElementById('reportContent').innerHTML = `
+                    <div class="error-message">
+                        <h2>生成报告失败</h2>
+                        <p>${error.message}</p>
+                        <p>请返回对话页面重新生成报告。</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示报告内容
+        async function displayReport() {
+            try {
+                // 显示时间戳和角色
+                document.getElementById('reportTimestamp').textContent = `生成时间：${reportData.timestamp}`;
+                document.getElementById('reportRole').textContent = `角色：${reportData.role === 'child' ? '孩子' : '父母'}`;
+                
+                const contentDiv = document.getElementById('reportContent');
+                
+                // 添加版本标识
+                const versionBadge = document.createElement('div');
+                versionBadge.className = `version-badge ${reportData.version}`;
+                versionBadge.textContent = reportData.version === 'brief' ? '简略版' : '详细版';
+                contentDiv.appendChild(versionBadge);
+
+                // 将内容按 Mermaid 代码块分割
+                const parts = reportData.content.split('```mermaid');
+                let processedContent = parts[0];
+                
+                for (let i = 1; i < parts.length; i++) {
+                    const [mermaidCode, ...rest] = parts[i].split('```');
+                    const mermaidDiv = document.createElement('div');
+                    mermaidDiv.className = 'mermaid';
+                    mermaidDiv.textContent = mermaidCode.trim();
+                    
+                    processedContent += mermaidDiv.outerHTML;
+                    processedContent += rest.join('```');
+                }
+                
+                // 创建内容容器
+                const contentContainer = document.createElement('div');
+                contentContainer.className = `report-content-container ${reportData.version}`;
+                contentContainer.innerHTML = processedContent;
+                contentDiv.appendChild(contentContainer);
+
+                // 重新渲染 Mermaid 图表
+                mermaid.init(undefined, '.mermaid');
+
+            } catch (error) {
+                console.error('显示报告错误:', error);
+                document.getElementById('reportContent').innerHTML = `
+                    <div class="error-message">
+                        <h2>显示报告失败</h2>
+                        <p>${error.message}</p>
+                        <p>请返回对话页面重新生成报告。</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 页面加载时初始化报告数据
+        window.onload = initReportData;
+
+        // 修改下载PDF功能
+        async function downloadPDF() {
+            try {
+                // 获取报告容器
+                const container = document.querySelector('.report-container');
+                if (!container) {
+                    throw new Error('找不到报告内容');
+                }
+
+                // 临时隐藏按钮组
+                const buttonGroup = document.querySelector('.button-group');
+                if (buttonGroup) {
+                    buttonGroup.style.display = 'none';
+                }
+
+                // 使用html2canvas将内容转换为图片
+                const canvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+
+                // 恢复按钮组显示
+                if (buttonGroup) {
+                    buttonGroup.style.display = 'flex';
+                }
+
+                // 创建PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+
+                // 获取页面尺寸（以毫米为单位）
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+
+                // 计算缩放比例（将像素转换为毫米）
+                const imgWidth = canvas.width * 0.264583; // 1px = 0.264583mm
+                const imgHeight = canvas.height * 0.264583;
+                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+
+                // 计算居中位置
+                const x = (pageWidth - imgWidth * ratio) / 2;
+                const y = 10; // 顶部留出10mm的边距
+
+                // 将canvas图片添加到PDF
+                doc.addImage(
+                    canvas.toDataURL('image/jpeg', 1.0),
+                    'JPEG',
+                    x,
+                    y,
+                    imgWidth * ratio,
+                    imgHeight * ratio
+                );
+
+                // 如果内容超过一页，添加新页面
+                if (imgHeight * ratio > pageHeight) {
+                    let remainingHeight = imgHeight * ratio;
+                    let currentPage = 1;
+
+                    while (remainingHeight > pageHeight) {
+                        doc.addPage();
+                        currentPage++;
+                        remainingHeight -= pageHeight;
+
+                        doc.addImage(
+                            canvas.toDataURL('image/jpeg', 1.0),
+                            'JPEG',
+                            x,
+                            y - pageHeight * (currentPage - 1),
+                            imgWidth * ratio,
+                            imgHeight * ratio
+                        );
+                    }
+                }
+
+                // 保存PDF
+                doc.save('家庭沟通调解报告.pdf');
+
+            } catch (error) {
+                console.error('生成PDF错误:', error);
+                alert('生成PDF失败，错误信息: ' + error.message + '\n请尝试使用打印功能将页面另存为PDF。');
+            }
+        }
+
+        // 添加打印功能
+        function printReport() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

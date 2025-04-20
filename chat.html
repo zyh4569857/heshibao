@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对话 - 和事宝</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- 添加 jsPDF 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        .chat-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+            padding-right: 200px;
+        }
+
+        .back-home-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-home-button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-home-button:hover .back-icon {
+            transform: translateX(-3px);
+        }
+
+        /* 调整聊天容器的上边距，为返回按钮留出空间 */
+        .chat-container {
+            padding-top: 60px;
+        }
+
+        /* 确保消息区域不会被返回按钮遮挡 */
+        .chat-messages {
+            margin-top: 20px;
+            margin-right: 20px;
+        }
+
+        .generate-report-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+        }
+
+        .generate-report-button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 修改版本选择弹窗的样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h2 {
+            font-family: SimSun, '宋体', serif;
+            font-size: 18pt;
+            color: #1d1d1f;
+            margin-bottom: 1rem;
+        }
+
+        .modal-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-card {
+            background: #f5f5f7;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .option-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .option-card.selected {
+            border-color: #0066cc;
+            background: rgba(0, 102, 204, 0.05);
+        }
+
+        .option-title {
+            font-family: SimSun, '宋体', serif;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+        }
+
+        .option-price {
+            font-family: SimSun, '宋体', serif;
+            font-size: 12pt;
+            color: #86868b;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-description {
+            font-family: SimSun, '宋体', serif;
+            font-size: 11pt;
+            color: #86868b;
+            line-height: 1.4;
+        }
+
+        .modal-footer {
+            text-align: center;
+        }
+
+        .modal-btn {
+            padding: 0.8rem 2.5rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+            background: #0066cc;
+            color: white;
+            opacity: 0.5;
+        }
+
+        .modal-btn:not([disabled]) {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        .modal-btn:not([disabled]):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .personality-test-entry {
+            text-align: center;
+            padding: 15px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 180px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            animation: slideInRight 1s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .personality-test-entry:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .personality-test-entry .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(45deg, #ff6b6b, #e74c3c);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .personality-test-entry svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .personality-test-entry:hover svg {
+            transform: rotate(5deg);
+        }
+
+        .personality-test-entry h3 {
+            color: #2c3e50;
+            margin: 8px 0 6px;
+            font-size: 1rem;
+        }
+
+        .personality-test-entry p {
+            color: #7f8c8d;
+            margin: 0;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .personality-test-entry .features {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #e0e0e0;
+            font-size: 0.8em;
+            color: #666;
+            text-align: left;
+        }
+
+        .personality-test-entry .features span {
+            display: block;
+            margin: 3px 0;
+            padding-left: 18px;
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+
+        .personality-test-entry .features span:hover {
+            transform: translateX(5px);
+        }
+
+        .personality-test-entry .features span:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #2ecc71;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button onclick="window.location.href='index.html'" class="back-home-button">
+                <span class="back-icon">←</span>
+                返回首页
+            </button>
+        </div>
+
+        <div class="personality-test-entry" onclick="window.location.href='personality_test.html'">
+            <div class="badge">新功能</div>
+            <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#3498db" stroke-width="2"/>
+                <circle cx="40" cy="45" r="15" fill="#3498db"/>
+                <circle cx="80" cy="45" r="15" fill="#2ecc71"/>
+                <path d="M40 80 Q60 95 80 80" stroke="#34495e" stroke-width="3" fill="none"/>
+            </svg>
+            <h3>亲子性格匹配分析</h3>
+            <p>科学解读性格特点，提升沟通效果</p>
+            <div class="features">
+                <span>MBTI性格解析</span>
+                <span>DISC行为风格</span>
+                <span>亲子匹配报告</span>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <!-- 消息将在这里动态添加 -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="请输入您的消息...">
+            <button onclick="sendMessage()">发送</button>
+        </div>
+        <div class="summary-section">
+            <button onclick="generateReport()" class="generate-report-button">生成总结报告</button>
+        </div>
+    </div>
+
+    <!-- 修改版本选择弹窗的HTML结构 -->
+    <div class="modal-overlay" id="versionModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>选择报告版本</h2>
+            </div>
+            <div class="modal-options">
+                <div class="option-card" onclick="selectVersion('brief')">
+                    <div class="option-title">简略版</div>
+                    <div class="option-price">免费</div>
+                    <div class="option-description">包含基本的沟通分析和建议</div>
+                </div>
+                <div class="option-card" onclick="selectVersion('detailed')">
+                    <div class="option-title">详细版</div>
+                    <div class="option-price">¥19.90</div>
+                    <div class="option-description">包含深度分析和专业建议</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" id="confirmBtn" disabled onclick="confirmVersion()">确认选择</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API_KEY = '4b3ed3f4-a392-4e7f-922a-42dbaf6d8e64';
+        const API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+        
+        // 获取URL参数中的角色
+        const urlParams = new URLSearchParams(window.location.search);
+        const role = urlParams.get('role');
+        
+        // 根据角色设置系统提示词
+        const systemPrompt = role === 'child' ? 
+            '你是一位专业的家庭沟通调解专家，专注于帮助孩子表达自己的感受和需求。你需要通过对话引导孩子认识自己的情感需求，培养自我表达能力。请用温暖、理解和支持的语气与孩子交流。在对话中，请特别关注孩子的真实感受、内心诉求和成长需求。' :
+            '你是一位专业的家庭沟通调解专家，专注于帮助父母理解孩子的成长需求和情感世界。你需要通过对话帮助父母发现自己的教育盲点和沟通障碍，并提供建设性的建议。请用专业、耐心和同理心的语气与父母交流。在对话中，请特别关注父母的教育理念、情感需求和沟通方式。';
+        
+        // 添加欢迎消息
+        const welcomeMessage = role === 'child' ? 
+            '你好！我是专业的家庭沟通调解专家。我理解在成长过程中，你可能会遇到一些与父母沟通的困扰。让我们一起来探索如何更好地表达自己，建立更和谐的亲子关系。请告诉我你最近在与父母沟通时遇到的最大困扰是什么？' :
+            '您好！我是专业的家庭沟通调解专家。我理解在教育孩子的过程中，您可能会遇到一些沟通上的挑战。让我们一起来探讨如何更好地理解和支持孩子，建立更和谐的亲子关系。请告诉我您在与孩子沟通时遇到的最大挑战是什么？';
+        
+        addMessage(welcomeMessage, 'bot');
+
+        // 存储对话历史
+        let messages = [
+            { role: "system", content: systemPrompt }
+        ];
+
+        // 存储对话总结
+        let conversationSummary = {
+            timestamp: '',
+            communicationIssues: {
+                child: [],
+                parent: [],
+                mutual: []
+            },
+            emotionalNeeds: {
+                child: [],
+                parent: []
+            },
+            communicationPatterns: {
+                child: [],
+                parent: []
+            },
+            suggestedSolutions: {
+                immediate: [],
+                longTerm: []
+            },
+            keyInsights: {
+                child: [],
+                parent: [],
+                relationship: []
+            },
+            strengths: {
+                child: [],
+                parent: []
+            },
+            expectations: {
+                child: [],
+                parent: []
+            }
+        };
+
+        let selectedVersion = null;
+
+        // 添加支付状态变量
+        let paymentStatus = {
+            isPaid: false,
+            orderId: null
+        };
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                // 添加用户消息到界面
+                addMessage(message, 'user');
+                input.value = '';
+                
+                // 添加用户消息到对话历史
+                messages.push({ role: "user", content: message });
+                
+                try {
+                    // 显示加载状态
+                    const loadingDiv = document.createElement('div');
+                    loadingDiv.className = 'message bot-message loading';
+                    loadingDiv.textContent = '正在思考...';
+                    document.getElementById('chatMessages').appendChild(loadingDiv);
+                    
+                    // 调用API
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: "deepseek-r1-250120",
+                            messages: messages,
+                            timeout: 60
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('API请求失败');
+                    }
+
+                    const data = await response.json();
+                    const botResponse = data.choices[0].message.content;
+                    
+                    // 移除加载状态
+                    loadingDiv.remove();
+                    
+                    // 添加机器人回复到界面
+                    addMessage(botResponse, 'bot');
+                    
+                    // 添加机器人回复到对话历史
+                    messages.push({ role: "assistant", content: botResponse });
+
+                    // 更新对话总结
+                    updateSummary(message, botResponse);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    loadingDiv.remove();
+                    addMessage('抱歉，我现在遇到了一些问题。请稍后再试。', 'bot');
+                }
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // 更新对话总结
+        function updateSummary(userMessage, botResponse) {
+            // 分析用户消息
+            if (role === 'child') {
+                // 分析孩子的沟通问题
+                if (userMessage.includes('不理解') || userMessage.includes('生气') || 
+                    userMessage.includes('难过') || userMessage.includes('烦恼')) {
+                    conversationSummary.communicationIssues.child.push({
+                        content: userMessage,
+                        context: botResponse,
+                        type: 'emotional'
+                    });
+                }
+                // 分析孩子的情感需求
+                if (userMessage.includes('想要') || userMessage.includes('需要') || 
+                    userMessage.includes('希望') || userMessage.includes('期待')) {
+                    conversationSummary.emotionalNeeds.child.push({
+                        content: userMessage,
+                        context: botResponse
+                    });
+                }
+                // 分析孩子的优势
+                if (userMessage.includes('喜欢') || userMessage.includes('擅长') || 
+                    userMessage.includes('兴趣') || userMessage.includes('爱好')) {
+                    conversationSummary.strengths.child.push({
+                        content: userMessage,
+                        context: botResponse
+                    });
+                }
+                // 分析孩子的期待
+                if (userMessage.includes('想') || userMessage.includes('希望') || 
+                    userMessage.includes('梦想') || userMessage.includes('职业')) {
+                    conversationSummary.expectations.child.push({
+                        content: userMessage,
+                        context: botResponse
+                    });
+                }
+            } else {
+                // 分析父母的沟通问题
+                if (userMessage.includes('不听话') || userMessage.includes('叛逆') || 
+                    userMessage.includes('担心') || userMessage.includes('焦虑')) {
+                    conversationSummary.communicationIssues.parent.push({
+                        content: userMessage,
+                        context: botResponse,
+                        type: 'behavioral'
+                    });
+                }
+                // 分析父母的情感需求
+                if (userMessage.includes('希望') || userMessage.includes('期待') || 
+                    userMessage.includes('要求') || userMessage.includes('应该')) {
+                    conversationSummary.emotionalNeeds.parent.push({
+                        content: userMessage,
+                        context: botResponse
+                    });
+                }
+                // 分析父母的优势
+                if (userMessage.includes('经验') || userMessage.includes('能力') || 
+                    userMessage.includes('付出') || userMessage.includes('努力')) {
+                    conversationSummary.strengths.parent.push({
+                        content: userMessage,
+                        context: botResponse
+                    });
+                }
+                // 分析父母的期待
+                if (userMessage.includes('希望') || userMessage.includes('期待') || 
+                    userMessage.includes('要求') || userMessage.includes('应该')) {
+                    conversationSummary.expectations.parent.push({
+                        content: userMessage,
+                        context: botResponse
+                    });
+                }
+            }
+
+            // 分析AI回复中的建议
+            if (botResponse.includes('建议') || botResponse.includes('可以') || 
+                botResponse.includes('试试') || botResponse.includes('不妨')) {
+                // 区分短期和长期建议
+                if (botResponse.includes('现在') || botResponse.includes('立即') || 
+                    botResponse.includes('马上') || botResponse.includes('今天')) {
+                    conversationSummary.suggestedSolutions.immediate.push({
+                        content: botResponse,
+                        context: userMessage
+                    });
+                } else {
+                    conversationSummary.suggestedSolutions.longTerm.push({
+                        content: botResponse,
+                        context: userMessage
+                    });
+                }
+            }
+
+            // 分析关键洞察
+            if (botResponse.includes('理解') || botResponse.includes('原因') || 
+                botResponse.includes('因为') || botResponse.includes('所以')) {
+                if (botResponse.includes('孩子') || botResponse.includes('你')) {
+                    conversationSummary.keyInsights.child.push({
+                        content: botResponse,
+                        context: userMessage
+                    });
+                } else if (botResponse.includes('父母') || botResponse.includes('您')) {
+                    conversationSummary.keyInsights.parent.push({
+                        content: botResponse,
+                        context: userMessage
+                    });
+                } else if (botResponse.includes('关系') || botResponse.includes('沟通') || 
+                         botResponse.includes('互动') || botResponse.includes('相处')) {
+                    conversationSummary.keyInsights.relationship.push({
+                        content: botResponse,
+                        context: userMessage
+                    });
+                }
+            }
+
+            // 分析相互沟通问题
+            if (userMessage.includes('不理解') || userMessage.includes('沟通') || 
+                userMessage.includes('交流') || userMessage.includes('对话')) {
+                conversationSummary.communicationIssues.mutual.push({
+                    content: userMessage,
+                    context: botResponse,
+                    type: 'interaction'
+                });
+            }
+        }
+
+        // 修改生成报告按钮的点击事件
+        document.querySelector('.generate-report-button').onclick = function() {
+            // 检查是否有对话内容
+            if (messages.length <= 1) {
+                alert('请先进行一些对话，然后再生成报告。');
+                return;
+            }
+            
+            // 显示弹窗
+            showVersionModal();
+            
+            // 禁用生成报告按钮，防止重复点击
+            this.disabled = true;
+            this.style.opacity = '0.5';
+            this.style.cursor = 'not-allowed';
+        };
+
+        // 修改显示版本选择弹窗的函数
+        function showVersionModal() {
+            const modal = document.getElementById('versionModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                
+                // 重置选择状态
+                selectedVersion = null;
+                document.querySelectorAll('.option-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // 禁用确认按钮
+                const confirmBtn = document.getElementById('confirmBtn');
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.style.opacity = '0.5';
+                }
+            }
+        }
+
+        // 修改选择版本的函数
+        function selectVersion(version) {
+            selectedVersion = version;
+            
+            // 更新选中状态
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            const selectedCard = event.currentTarget;
+            selectedCard.classList.add('selected');
+            
+            // 启用确认按钮
+            const confirmBtn = document.getElementById('confirmBtn');
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.style.opacity = '1';
+            }
+        }
+
+        // 修改支付二维码显示部分
+        function showPaymentQRCode() {
+            // 生成订单号
+            const orderId = 'WX_' + Date.now();
+            
+            const paymentModal = document.createElement('div');
+            paymentModal.className = 'payment-modal';
+            paymentModal.innerHTML = `
+                <div class="payment-container">
+                    <h2>微信支付</h2>
+                    <p class="price">¥19.90</p>
+                    <div class="qr-code">
+                        <img src="a337dbb6918678e507adc5e33a5d623.jpg" alt="微信支付二维码" data-order-id="${orderId}">
+                    </div>
+                    <p class="payment-tip">请使用微信扫码支付</p>
+                    <div class="payment-buttons">
+                        <button onclick="checkPayment()" class="payment-btn confirm-btn">已完成支付</button>
+                        <button onclick="cancelPayment()" class="payment-btn cancel-btn">取消支付</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(paymentModal);
+        }
+
+        // 修改支付检测函数
+        async function checkPayment() {
+            try {
+                // 显示验证中的提示
+                const paymentTip = document.querySelector('.payment-tip');
+                if (paymentTip) {
+                    paymentTip.textContent = '正在验证支付状态...';
+                }
+
+                // 从URL中获取支付二维码的订单号
+                const qrCodeImg = document.querySelector('.qr-code img');
+                const orderId = qrCodeImg.getAttribute('data-order-id');
+                
+                if (!orderId) {
+                    throw new Error('订单号不存在');
+                }
+
+                // 模拟支付成功
+                paymentStatus.isPaid = true;
+                paymentStatus.orderId = orderId;
+
+                // 移除支付弹窗
+                const paymentModal = document.querySelector('.payment-modal');
+                if (paymentModal) {
+                    paymentModal.remove();
+                }
+
+                // 生成详细报告
+                await generateReport('detailed');
+
+            } catch (error) {
+                console.error('支付验证错误:', error);
+                alert('支付验证失败，请稍后重试');
+
+                // 更新支付提示文本
+                const paymentTip = document.querySelector('.payment-tip');
+                if (paymentTip) {
+                    paymentTip.textContent = '请使用微信扫码支付';
+                }
+            }
+        }
+
+        // 修改确认版本选择函数中的支付部分
+        async function confirmVersion() {
+            if (!selectedVersion) return;
+
+            const modal = document.getElementById('versionModal');
+            
+            // 隐藏版本选择弹窗
+            if (modal) {
+                modal.style.display = 'none';
+            }
+
+            if (selectedVersion === 'detailed') {
+                // 显示支付二维码
+                showPaymentQRCode();
+            } else {
+                // 如果是免费版，直接生成报告
+                try {
+                    await generateReport('brief');
+                } catch (error) {
+                    console.error('生成报告错误:', error);
+                    alert('生成报告失败，请稍后重试。');
+                    
+                    // 重新启用生成报告按钮
+                    const reportButton = document.querySelector('.generate-report-button');
+                    if (reportButton) {
+                        reportButton.disabled = false;
+                        reportButton.style.opacity = '1';
+                        reportButton.style.cursor = 'pointer';
+                    }
+                }
+            }
+        }
+
+        // 添加取消支付函数
+        function cancelPayment() {
+            // 移除支付弹窗
+            const paymentModal = document.querySelector('.payment-modal');
+            if (paymentModal) {
+                paymentModal.remove();
+            }
+            
+            // 重新启用生成报告按钮
+            const reportButton = document.querySelector('.generate-report-button');
+            if (reportButton) {
+                reportButton.disabled = false;
+                reportButton.style.opacity = '1';
+                reportButton.style.cursor = 'pointer';
+            }
+        }
+
+        // 修改生成报告函数
+        async function generateReport(version) {
+            try {
+                // 显示加载状态
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'message bot-message loading';
+                loadingDiv.textContent = '正在生成报告...';
+                document.getElementById('chatMessages').appendChild(loadingDiv);
+
+                // 准备提示词
+                let prompt;
+                if (version === 'brief') {
+                    prompt = `请根据以下对话内容，生成一份简略的家庭沟通调解报告。
+角色：${role === 'child' ? '孩子' : '父母'}
+
+请包含以下内容：
+1. 核心问题概述（100字以内）
+2. 关键发现（2-3点）
+3. 基本建议（2-3条）
+
+要求：
+- 内容简洁明了，总字数控制在500字以内
+- 使用要点式列举，便于快速阅读
+- 重点突出最关键的问题和建议
+
+对话记录：
+${JSON.stringify(messages.filter(msg => msg.role !== 'system'), null, 2)}`;
+                } else {
+                    prompt = `请根据以下对话内容，生成一份详细的家庭沟通调解报告。
+角色：${role === 'child' ? '孩子' : '父母'}
+
+请包含以下内容：
+1. 沟通问题深度分析
+   - 当前沟通模式分析
+   - 沟通障碍识别
+   - 情感需求分析
+2. 家庭关系评估
+   - 互动模式分析
+   - 角色定位评估
+   - 期望差异分析
+3. 具体改善建议
+   - 短期改善目标
+   - 中长期发展建议
+   - 具体执行步骤
+4. 沟通技巧指导
+   - 情绪管理方法
+   - 有效表达技巧
+   - 倾听与回应策略
+5. 发展规划
+   - 阶段性目标设定
+   - 进展评估标准
+   - 调整与反馈机制
+
+要求：
+- 内容全面深入，总字数不少于1500字
+- 结构清晰，层次分明
+- 提供具体可执行的建议
+- 注重长期发展规划
+- 可以使用图表辅助说明
+
+对话记录：
+${JSON.stringify(messages.filter(msg => msg.role !== 'system'), null, 2)}`;
+                }
+
+                // 调用API生成报告
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "deepseek-r1-250120",
+                        messages: [
+                            {
+                                role: "system",
+                                content: "你是一位专业的家庭沟通调解专家。请用清晰的结构和专业的视角分析对话内容，生成一份调解报告。"
+                            },
+                            {
+                                role: "user",
+                                content: prompt
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API请求失败');
+                }
+
+                const data = await response.json();
+                
+                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                    throw new Error('API响应格式错误');
+                }
+
+                // 获取报告内容
+                const reportContent = data.choices[0].message.content;
+
+                // 准备报告数据
+                const reportData = {
+                    content: reportContent,
+                    timestamp: new Date().toLocaleString(),
+                    role: role || 'unknown',
+                    version: version
+                };
+
+                // 移除加载状态
+                loadingDiv.remove();
+
+                // 存储报告数据
+                localStorage.setItem('reportData', JSON.stringify(reportData));
+
+                // 显示成功消息
+                const successDiv = document.createElement('div');
+                successDiv.className = 'message bot-message';
+                successDiv.textContent = '报告生成成功！即将跳转到报告页面...';
+                document.getElementById('chatMessages').appendChild(successDiv);
+
+                // 延迟跳转
+                setTimeout(() => {
+                    window.location.href = 'report.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('生成报告错误:', error);
+                const loadingDiv = document.querySelector('.loading');
+                if (loadingDiv) {
+                    loadingDiv.remove();
+                }
+                throw error;
+            }
+        }
+
+        // 添加支付相关样式
+        const paymentStyles = `
+            .payment-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(5px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+
+            .payment-container {
+                background: white;
+                padding: 2rem;
+                border-radius: 20px;
+                text-align: center;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            }
+
+            .payment-container h2 {
+                font-family: SimSun, '宋体', serif;
+                font-size: 18pt;
+                margin-bottom: 1rem;
+                color: #1d1d1f;
+            }
+
+            .price {
+                font-family: SimSun, '宋体', serif;
+                font-size: 24pt;
+                font-weight: bold;
+                color: #1d1d1f;
+                margin: 1.5rem 0;
+            }
+
+            .qr-code {
+                margin: 2rem auto;
+                width: 200px;
+                height: 200px;
+                padding: 10px;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+
+            .qr-code img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+
+            .payment-tip {
+                font-family: SimSun, '宋体', serif;
+                font-size: 12pt;
+                color: #86868b;
+                margin: 1.5rem 0;
+            }
+
+            .payment-buttons {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                margin-top: 2rem;
+            }
+
+            .payment-btn {
+                padding: 0.8rem 1.5rem;
+                border-radius: 25px;
+                font-size: 1rem;
+                cursor: pointer;
+                border: none;
+                outline: none;
+                transition: all 0.3s ease;
+                font-family: SimSun, '宋体', serif;
+            }
+
+            .confirm-btn {
+                background: #07C160;
+                color: white;
+            }
+
+            .confirm-btn:hover {
+                background: #06b057;
+            }
+
+            .cancel-btn {
+                background: #f5f5f7;
+                color: #1d1d1f;
+            }
+
+            .cancel-btn:hover {
+                background: #e5e5e7;
+            }
+
+            .payment-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+        `;
+
+        // 更新样式
+        const existingStyle = document.querySelector('style');
+        if (existingStyle) {
+            existingStyle.textContent += paymentStyles;
+        } else {
+            const style = document.createElement('style');
+            style.textContent = paymentStyles;
+            document.head.appendChild(style);
+        }
+
+        // 添加回车发送功能
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
