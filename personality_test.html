@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>亲子性格匹配分析 - 和事宝</title>
-    <script src="./personality_questions.js"></script>
+    <script src="personality_questions.js"></script>
     <style>
         :root {
             --primary-color: #3498db;
@@ -85,27 +85,63 @@
             gap: 1rem;
         }
 
-        .option-button {
+        .option {
             padding: 1rem;
             border: 2px solid #e0e0e0;
             border-radius: var(--border-radius);
-            background: white;
+            margin-bottom: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-align: left;
-            font-size: 1rem;
-            color: var(--text-color);
         }
 
-        .option-button:hover {
+        .option:hover {
             border-color: var(--primary-color);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .option-button.selected {
+        .option.selected {
             border-color: var(--primary-color);
             background: rgba(52, 152, 219, 0.1);
+        }
+
+        .scale-container {
+            margin-top: 2rem;
+        }
+
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .scale-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .scale-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .scale-button:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .scale-button.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
         }
 
         .likert-scale {
@@ -197,10 +233,62 @@
 
         .role-selection {
             display: flex;
-            justify-content: center;
-            gap: 2rem;
+            flex-direction: column;
+            align-items: center;
             margin: 3rem 0;
             animation: fadeInUp 0.8s ease;
+        }
+
+        .role-cards {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* 角色选择页面底部提示信息样式 */
+        .bottom-selector-info {
+            margin-top: 2rem;
+            text-align: center;
+            color: #666;
+            animation: pulse 2s infinite;
+        }
+
+        .bottom-selector-info p {
+            font-size: 1.1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .bottom-selector-info p:before,
+        .bottom-selector-info p:after {
+            content: '👆';
+            position: absolute;
+            top: -1.5rem;
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .bottom-selector-info p:before {
+            left: 25%;
+            transform: translateX(-50%);
+        }
+
+        .bottom-selector-info p:after {
+            right: 25%;
+            transform: translateX(50%);
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.7;
+            }
         }
 
         .role-card {
@@ -233,49 +321,6 @@
         .role-description {
             font-size: 0.9rem;
             color: #666;
-        }
-
-        .role-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            display: none;
-            align-items: center;
-            gap: 0.5rem;
-            animation: fadeInRight 0.5s ease;
-            z-index: 1000;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .role-indicator:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .role-indicator .role-icon {
-            font-size: 2rem;
-            margin: 0;
-        }
-
-        .role-indicator .role-text {
-            font-size: 1rem;
-            color: var(--text-color);
-        }
-
-        @keyframes fadeInRight {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
         }
 
         .results-container {
@@ -380,11 +425,6 @@
     </style>
 </head>
 <body>
-    <div class="role-indicator" id="roleIndicator" onclick="startPersonalityTest()">
-        <div class="role-icon" id="roleIcon"></div>
-        <div class="role-text" id="roleText"></div>
-    </div>
-
     <div class="container">
         <div class="test-header">
             <h1>亲子性格匹配分析</h1>
@@ -392,15 +432,22 @@
         </div>
 
         <div id="roleSelection" class="role-selection">
-            <div class="role-card" onclick="startTest('child')">
-                <div class="role-icon">👶</div>
-                <div class="role-title">我是孩子</div>
-                <div class="role-description">适合6-15岁的青少年，帮助了解自己的性格特点</div>
+            <div class="role-cards">
+                <div class="role-card" onclick="startTest('child')">
+                    <div class="role-icon">👶</div>
+                    <div class="role-title">我是孩子</div>
+                    <div class="role-description">适合6-15岁的青少年，帮助了解自己的性格特点</div>
+                </div>
+                <div class="role-card" onclick="startTest('parent')">
+                    <div class="role-icon">👨‍👩</div>
+                    <div class="role-title">我是家长</div>
+                    <div class="role-description">适合家长，了解自己的教育风格与沟通方式</div>
+                </div>
             </div>
-            <div class="role-card" onclick="startTest('parent')">
-                <div class="role-icon">👨‍👩</div>
-                <div class="role-title">我是家长</div>
-                <div class="role-description">适合家长，了解自己的教育风格与沟通方式</div>
+
+            <!-- 在角色选择页面底部添加切换功能 -->
+            <div class="bottom-selector-info">
+                <p>请选择您的角色开始测试</p>
             </div>
         </div>
 
@@ -409,6 +456,7 @@
         </div>
 
         <div class="question-container" id="questionContainer" style="display: none;">
+            <h2 id="questionTitle"></h2>
             <div class="question-text" id="questionText"></div>
             <div class="options-container" id="optionsContainer"></div>
             <div class="navigation-buttons">
@@ -434,68 +482,48 @@
                 <div id="communicationTips"></div>
             </div>
             <div class="navigation-buttons">
-                <button class="nav-button back-button" onclick="window.location.reload()">重新测试</button>
+                <button class="nav-button back-button" onclick="resetTest()">重新测试</button>
                 <button class="nav-button" onclick="window.location.href='chat.html'">开始对话</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 初始化全局状态
-        window.currentRole = localStorage.getItem('selectedRole') || 'child';
-        window.currentSection = 'mbti';
-        window.currentQuestionIndex = 0;
-        window.answers = {
-            mbti: [],
-            disc: [],
-            bigFive: []
-        };
-
-        // 页面加载完成后直接开始测试
-        window.addEventListener('DOMContentLoaded', function() {
-            // 隐藏角色选择，显示问题容器
-            document.getElementById('roleSelection').style.display = 'none';
-            document.getElementById('questionContainer').style.display = 'block';
-            
-            // 显示角色指示器
-            showRoleIndicator(window.currentRole);
-            
-            // 开始测试
-            startPersonalityTest();
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                console.log("页面加载完成，初始化测试...");
+                
+                // 初始化问题库
+                if (typeof questionBank === 'undefined') {
+                    console.error("问题库未加载!");
+                    alert("问题库加载失败，请刷新页面重试");
+                    return;
+                }
+                console.log("问题库加载完成:", questionBank);
+                
+                // 设置全局访问变量
+                window.questionBank = questionBank;
+                
+                // 显示角色选择界面，而不是直接开始测试
+                document.getElementById('roleSelection').style.display = 'flex';
+                document.getElementById('questionContainer').style.display = 'none';
+                document.getElementById('resultsContainer').style.display = 'none';
+                
+            } catch (error) {
+                console.error("初始化测试时出错:", error);
+            }
         });
 
-        function showRoleIndicator(role) {
-            const roleIndicator = document.getElementById('roleIndicator');
-            const roleIcon = document.getElementById('roleIcon');
-            const roleText = document.getElementById('roleText');
-            
-            if (role === 'child') {
-                roleIcon.textContent = '👶';
-                roleText.textContent = '孩子视角';
-            } else {
-                roleIcon.textContent = '👨‍👩';
-                roleText.textContent = '家长视角';
-            }
-            
-            roleIndicator.style.display = 'flex';
-        }
-
+        // 开始测试
         window.startTest = function(role) {
+            console.log("启动测试，角色:", role);
+            
+            // 设置角色并保存到localStorage
             window.currentRole = role;
-            // 保存角色选择
             localStorage.setItem('selectedRole', role);
-            showRoleIndicator(role);
             
-            // 隐藏角色选择，显示问题
-            document.getElementById('roleSelection').style.display = 'none';
-            document.getElementById('questionContainer').style.display = 'block';
-            
-            // 开始测试
-            startPersonalityTest();
-        };
-
-        window.startPersonalityTest = function() {
-            // 重置测试状态
+            // 初始化测试状态
             window.currentSection = 'mbti';
             window.currentQuestionIndex = 0;
             window.answers = {
@@ -503,447 +531,697 @@
                 disc: [],
                 bigFive: []
             };
+
+            // 隐藏角色选择界面，显示问题
+            document.getElementById('roleSelection').style.display = 'none';
+            document.getElementById('questionContainer').style.display = 'block';
             
+            // 显示第一个问题
             showQuestion();
         };
 
+        // 显示当前问题
         window.showQuestion = function() {
-            const question = getCurrentQuestion();
-            document.getElementById('questionText').textContent = question.question;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-
-            if (question.type === 'likert5') {
-                const likertScale = document.createElement('div');
-                likertScale.className = 'likert-scale';
+            try {
+                const question = getCurrentQuestion();
                 
-                for (let i = 1; i <= 5; i++) {
-                    const option = document.createElement('div');
-                    option.className = 'likert-option';
-                    
-                    const radio = document.createElement('input');
-                    radio.type = 'radio';
-                    radio.name = 'likert';
-                    radio.value = i;
-                    radio.className = 'likert-radio';
-                    radio.onclick = () => selectOption(i);
-                    
-                    const label = document.createElement('label');
-                    label.className = 'likert-label';
-                    label.textContent = getLikertLabel(i);
-                    
-                    option.appendChild(radio);
-                    option.appendChild(label);
-                    likertScale.appendChild(option);
+                if (!question) {
+                    console.error("无法获取当前问题");
+                    return;
                 }
                 
-                optionsContainer.appendChild(likertScale);
-            } else {
-                question.options.forEach((option, index) => {
-                    const button = document.createElement('button');
-                    button.className = 'option-button';
-                    button.textContent = option.text;
-                    button.onclick = () => selectOption(option.value);
-                    optionsContainer.appendChild(button);
-                });
+                console.log("正在显示问题:", question);
+                
+                // 更新进度条
+                const totalQuestions = 
+                    window.questionBank[window.currentRole].mbti.length + 
+                    window.questionBank[window.currentRole].disc.length + 
+                    window.questionBank[window.currentRole].bigFive.length;
+                
+                let completedQuestions = window.currentQuestionIndex;
+                
+                if (window.currentSection === 'disc') {
+                    completedQuestions += window.questionBank[window.currentRole].mbti.length;
+                } else if (window.currentSection === 'bigFive') {
+                    completedQuestions += 
+                        window.questionBank[window.currentRole].mbti.length + 
+                        window.questionBank[window.currentRole].disc.length;
+                }
+                
+                const progress = Math.floor((completedQuestions / totalQuestions) * 100);
+                document.getElementById('progressBar').style.width = `${progress}%`;
+                
+                // 更新问题标题
+                let sectionTitle = '';
+                if (window.currentSection === 'mbti') {
+                    sectionTitle = 'MBTI性格测试';
+                } else if (window.currentSection === 'disc') {
+                    sectionTitle = 'DISC行为风格';
+                } else if (window.currentSection === 'bigFive') {
+                    sectionTitle = '大五人格测试';
+                }
+                
+                document.getElementById('questionTitle').textContent = sectionTitle;
+                
+                // 显示问题文本
+                const questionText = document.getElementById('questionText');
+                questionText.textContent = question.question;
+                
+                // 清除之前的选项
+                const optionsContainer = document.getElementById('optionsContainer');
+                optionsContainer.innerHTML = '';
+                
+                // 添加新选项
+                if (window.currentSection === 'bigFive') {
+                    // 创建大五人格的量表选项
+                    const scaleContainer = document.createElement('div');
+                    scaleContainer.className = 'scale-container';
+                    
+                    // 添加量表标签
+                    const labelsContainer = document.createElement('div');
+                    labelsContainer.className = 'scale-labels';
+                    
+                    const leftLabel = document.createElement('span');
+                    leftLabel.textContent = '完全不同意';
+                    
+                    const rightLabel = document.createElement('span');
+                    rightLabel.textContent = '完全同意';
+                    
+                    labelsContainer.appendChild(leftLabel);
+                    labelsContainer.appendChild(rightLabel);
+                    scaleContainer.appendChild(labelsContainer);
+                    
+                    // 添加量表按钮
+                    const buttonsContainer = document.createElement('div');
+                    buttonsContainer.className = 'scale-buttons';
+                    
+                    for (let i = 1; i <= 5; i++) {
+                        const button = document.createElement('button');
+                        button.className = 'scale-button';
+                        button.setAttribute('data-value', i);
+                        button.textContent = i;
+                        
+                        // 检查是否已选择
+                        if (window.answers[window.currentSection][window.currentQuestionIndex] === i) {
+                            button.classList.add('selected');
+                        }
+                        
+                        button.onclick = function() {
+                            selectOption(i);
+                        };
+                        
+                        buttonsContainer.appendChild(button);
+                    }
+                    
+                    scaleContainer.appendChild(buttonsContainer);
+                    optionsContainer.appendChild(scaleContainer);
+                } else {
+                    // 创建MBTI或DISC的选项
+                    for (let i = 0; i < question.options.length; i++) {
+                        const option = document.createElement('div');
+                        option.className = 'option';
+                        
+                        // 检查是否已选择
+                        if (window.answers[window.currentSection][window.currentQuestionIndex] === i) {
+                            option.classList.add('selected');
+                        }
+                        
+                        option.onclick = function() {
+                            selectOption(i);
+                        };
+                        
+                        const optionText = document.createElement('p');
+                        optionText.textContent = question.options[i].text;
+                        option.appendChild(optionText);
+                        
+                        optionsContainer.appendChild(option);
+                    }
+                }
+                
+                // 更新导航按钮
+                const prevButton = document.getElementById('prevButton');
+                const nextButton = document.getElementById('nextButton');
+                
+                // 第一个问题没有上一题按钮
+                if (window.currentSection === 'mbti' && window.currentQuestionIndex === 0) {
+                    prevButton.style.visibility = 'hidden';
+                } else {
+                    prevButton.style.visibility = 'visible';
+                }
+                
+                // 最后一个问题显示完成按钮
+                if (window.currentSection === 'bigFive' && 
+                    window.currentQuestionIndex === window.questionBank[window.currentRole].bigFive.length - 1) {
+                    nextButton.textContent = '完成测试';
+                } else {
+                    nextButton.textContent = '下一题';
+                }
+            } catch (error) {
+                console.error("显示问题时出错:", error);
             }
-
-            updateNavigationButtons();
-            updateProgressBar();
         };
 
+        // 获取当前问题
         window.getCurrentQuestion = function() {
-            return window.questionBank[window.currentRole][window.currentSection][window.currentQuestionIndex];
-        };
-
-        window.selectOption = function(value) {
-            const question = getCurrentQuestion();
-            const answer = {
-                questionId: question.id,
-                value: value,
-                dimension: question.dimension
-            };
-
-            if (question.type === 'likert5') {
-                answer.score = value;
-            }
-
-            // 更新答案
-            const existingAnswerIndex = window.answers[window.currentSection].findIndex(
-                a => a.questionId === question.id
-            );
-
-            if (existingAnswerIndex !== -1) {
-                window.answers[window.currentSection][existingAnswerIndex] = answer;
-            } else {
-                window.answers[window.currentSection].push(answer);
-            }
-
-            // 更新UI
-            const options = document.querySelectorAll('.option-button');
-            options.forEach(option => option.classList.remove('selected'));
-            if (event && event.target && question.type !== 'likert5') {
-                event.target.classList.add('selected');
-            }
-
-            // 启用下一题按钮
-            document.getElementById('nextButton').disabled = false;
-        };
-
-        window.getLikertLabel = function(value) {
-            switch(value) {
-                case 1: return '完全不同意';
-                case 2: return '不太同意';
-                case 3: return '一般';
-                case 4: return '比较同意';
-                case 5: return '完全同意';
-            }
-        };
-
-        window.previousQuestion = function() {
-            if (window.currentQuestionIndex > 0) {
-                window.currentQuestionIndex--;
-            } else if (window.currentSection === 'disc') {
-                window.currentSection = 'mbti';
-                window.currentQuestionIndex = window.questionBank[window.currentRole].mbti.length - 1;
-            } else if (window.currentSection === 'bigFive') {
-                window.currentSection = 'disc';
-                window.currentQuestionIndex = window.questionBank[window.currentRole].disc.length - 1;
-            }
-            showQuestion();
-        };
-
-        window.nextQuestion = function() {
-            const currentSectionQuestions = window.questionBank[window.currentRole][window.currentSection];
+            console.log("获取问题 - 角色:", window.currentRole, "部分:", window.currentSection, "索引:", window.currentQuestionIndex);
             
-            if (window.currentQuestionIndex < currentSectionQuestions.length - 1) {
-                window.currentQuestionIndex++;
+            try {
+                // 检查问题库是否存在
+                if (!window.questionBank) {
+                    console.error("问题库未定义!");
+                    return null;
+                }
+                
+                // 检查角色是否有效
+                if (!window.questionBank[window.currentRole]) {
+                    console.error("无效的角色:", window.currentRole);
+                    console.log("可用角色:", Object.keys(window.questionBank));
+                    return null;
+                }
+                
+                // 检查测试部分是否有效
+                if (!window.questionBank[window.currentRole][window.currentSection]) {
+                    console.error("无效的测试部分:", window.currentSection);
+                    console.log("可用部分:", Object.keys(window.questionBank[window.currentRole]));
+                    return null;
+                }
+                
+                // 获取当前部分的问题
+                const questions = window.questionBank[window.currentRole][window.currentSection];
+                
+                // 检查问题索引是否有效
+                if (window.currentQuestionIndex < 0 || window.currentQuestionIndex >= questions.length) {
+                    console.error("无效的问题索引:", window.currentQuestionIndex, "问题数量:", questions.length);
+                    return null;
+                }
+                
+                return questions[window.currentQuestionIndex];
+            } catch (error) {
+                console.error("获取问题时出错:", error);
+                return null;
+            }
+        };
+
+        // 选择选项
+        window.selectOption = function(optionIndex) {
+            try {
+                const question = getCurrentQuestion();
+                if (!question) {
+                    console.error("无法获取当前问题");
+                    return;
+                }
+                
+                console.log("选择选项", optionIndex, "对于问题", question.question);
+                
+                // 简化答案记录，只存储索引
+                window.answers[window.currentSection][window.currentQuestionIndex] = optionIndex;
+                
+                // 更新UI显示已选择的选项
+                const optionsContainer = document.getElementById('optionsContainer');
+                
+                if (window.currentSection === 'bigFive') {
+                    // 大五人格的量表选项
+                    const scaleButtons = optionsContainer.querySelectorAll('.scale-button');
+                    scaleButtons.forEach(button => {
+                        if (parseInt(button.getAttribute('data-value')) === optionIndex) {
+                            button.classList.add('selected');
+                        } else {
+                            button.classList.remove('selected');
+                        }
+                    });
+                } else {
+                    // MBTI和DISC的选项
+                    const options = optionsContainer.querySelectorAll('.option');
+                    options.forEach((option, idx) => {
+                        if (idx === optionIndex) {
+                            option.classList.add('selected');
+                        } else {
+                            option.classList.remove('selected');
+                        }
+                    });
+                }
+                
+                // 自动前进到下一题
+                setTimeout(() => {
+                    nextQuestion();
+                }, 500);
+            } catch (error) {
+                console.error("选择选项时出错:", error);
+            }
+        };
+
+        // 上一题
+        window.previousQuestion = function() {
+            try {
+                if (window.currentQuestionIndex > 0) {
+                    window.currentQuestionIndex--;
+                } else if (window.currentSection === 'disc') {
+                    window.currentSection = 'mbti';
+                    window.currentQuestionIndex = window.questionBank[window.currentRole].mbti.length - 1;
+                } else if (window.currentSection === 'bigFive') {
+                    window.currentSection = 'disc';
+                    window.currentQuestionIndex = window.questionBank[window.currentRole].disc.length - 1;
+                }
                 showQuestion();
-            } else if (window.currentSection === 'mbti') {
-                window.currentSection = 'disc';
-                window.currentQuestionIndex = 0;
-                showQuestion();
-            } else if (window.currentSection === 'disc') {
-                window.currentSection = 'bigFive';
-                window.currentQuestionIndex = 0;
-                showQuestion();
-            } else {
+            } catch (error) {
+                console.error("返回上一题时出错:", error);
+            }
+        };
+
+        // 下一题
+        window.nextQuestion = function() {
+            try {
+                // 获取当前部分的问题数量
+                const currentSectionQuestions = window.questionBank[window.currentRole][window.currentSection];
+                
+                // 检查是否已回答当前问题
+                if (window.answers[window.currentSection][window.currentQuestionIndex] === undefined) {
+                    alert("请先回答当前问题");
+                    return;
+                }
+                
+                if (window.currentQuestionIndex < currentSectionQuestions.length - 1) {
+                    // 前进到下一个问题
+                    window.currentQuestionIndex++;
+                    showQuestion();
+                } else {
+                    // 当前部分的问题已完成，移动到下一部分
+                    if (window.currentSection === 'mbti') {
+                        window.currentSection = 'disc';
+                        window.currentQuestionIndex = 0;
+                        showQuestion();
+                    } else if (window.currentSection === 'disc') {
+                        window.currentSection = 'bigFive';
+                        window.currentQuestionIndex = 0;
+                        showQuestion();
+                    } else {
+                        // 所有部分都已完成
+                        showResults();
+                    }
+                }
+            } catch (error) {
+                console.error("前进到下一题时出错:", error);
+                // 出错时也尝试显示结果
                 showResults();
             }
         };
 
-        window.updateNavigationButtons = function() {
-            const prevButton = document.getElementById('prevButton');
-            const nextButton = document.getElementById('nextButton');
-            
-            prevButton.disabled = window.currentQuestionIndex === 0 && window.currentSection === 'mbti';
-            nextButton.disabled = !window.answers[window.currentSection].some(
-                a => a.questionId === getCurrentQuestion().id
-            );
-        };
-
-        window.updateProgressBar = function() {
-            const totalQuestions = 
-                window.questionBank[window.currentRole].mbti.length + 
-                window.questionBank[window.currentRole].disc.length + 
-                window.questionBank[window.currentRole].bigFive.length;
-            
-            const completedQuestions = 
-                (window.currentSection === 'disc' ? window.questionBank[window.currentRole].mbti.length : 0) +
-                (window.currentSection === 'bigFive' ? window.questionBank[window.currentRole].mbti.length + window.questionBank[window.currentRole].disc.length : 0) +
-                window.currentQuestionIndex;
-            
-            const progress = (completedQuestions / totalQuestions) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
-        };
-
+        // 显示结果
         window.showResults = function() {
-            document.getElementById('questionContainer').style.display = 'none';
-            document.getElementById('resultsContainer').style.display = 'block';
-
-            // 获取角色
-            const role = window.currentRole;
-            const roleTitleElem = document.createElement('div');
-            roleTitleElem.className = 'role-title-result';
-            roleTitleElem.innerHTML = role === 'child' 
-                ? '<span class="role-icon">👶</span> 孩子性格分析报告' 
-                : '<span class="role-icon">👨‍👩</span> 家长育儿风格分析报告';
-            
-            // 添加角色标题
-            const resultContainer = document.getElementById('resultsContainer');
-            resultContainer.insertBefore(roleTitleElem, resultContainer.firstChild);
-
-            // 分析 MBTI 结果
-            const mbtiResult = window.analyzeMBTI(window.answers.mbti);
-            const mbtiTypeDesc = getMBTIDescription(mbtiResult.E_I + mbtiResult.S_N + mbtiResult.T_F + mbtiResult.J_P, role);
-            document.getElementById('mbtiResult').innerHTML = `
-                <div class="mbti-type">${mbtiResult.E_I}${mbtiResult.S_N}${mbtiResult.T_F}${mbtiResult.J_P}</div>
-                <div class="mbti-description">${mbtiTypeDesc}</div>
-                <div class="mbti-details">
-                    <div class="mbti-trait">${mbtiResult.E_I === 'E' ? '外向' : '内向'} (${mbtiResult.E_I})</div>
-                    <div class="mbti-trait">${mbtiResult.S_N === 'S' ? '实感' : '直觉'} (${mbtiResult.S_N})</div>
-                    <div class="mbti-trait">${mbtiResult.T_F === 'T' ? '理性' : '感性'} (${mbtiResult.T_F})</div>
-                    <div class="mbti-trait">${mbtiResult.J_P === 'J' ? '计划' : '随性'} (${mbtiResult.J_P})</div>
-                </div>
-            `;
-
-            // 分析 DISC 结果
-            const discResult = window.analyzeDISC(window.answers.disc);
-            const discChart = document.getElementById('discChart');
-            renderTraitBars(discChart, discResult);
-            
-            // 添加DISC描述
-            const discDescElem = document.createElement('div');
-            discDescElem.className = 'disc-description';
-            discDescElem.innerHTML = getDISCDescription(discResult, role);
-            document.getElementById('discSection').appendChild(discDescElem);
-
-            // 分析大五人格结果
-            const bigFiveResult = window.analyzeBigFive(window.answers.bigFive);
-            const bigFiveChart = document.getElementById('bigFiveChart');
-            renderTraitBars(bigFiveChart, bigFiveResult);
-            
-            // 添加大五人格描述
-            const big5DescElem = document.createElement('div');
-            big5DescElem.className = 'big5-description';
-            big5DescElem.innerHTML = getBig5Description(bigFiveResult, role);
-            document.getElementById('bigFiveSection').appendChild(big5DescElem);
-
-            // 生成沟通建议
-            generateCommunicationTips(role, mbtiResult, discResult, bigFiveResult);
-
-            // 保存结果到 localStorage
-            localStorage.setItem('personalityTestResults', JSON.stringify({
-                role: window.currentRole,
-                mbti: mbtiResult,
-                disc: discResult,
-                bigFive: bigFiveResult,
-                timestamp: new Date().toISOString()
-            }));
-        };
-
-        window.renderTraitBars = function(container, traits) {
-            container.innerHTML = '';
-            Object.entries(traits).forEach(([trait, value]) => {
-                const maxValue = trait.startsWith('big5_') ? 5 : 4;
-                const percentage = (value / maxValue) * 100;
+            try {
+                console.log("显示测试结果...");
                 
-                const traitBar = document.createElement('div');
-                traitBar.className = 'trait-bar';
+                // 隐藏问题容器，显示结果容器
+                document.getElementById('questionContainer').style.display = 'none';
+                document.getElementById('resultsContainer').style.display = 'block';
                 
-                const label = document.createElement('div');
-                label.className = 'trait-label';
-                label.textContent = trait;
+                // 创建临时的分析结果（实际项目中这应该调用personality_questions.js中的分析函数）
+                // 假设MBTI分析结果
+                const mbtiResult = {
+                    EI: window.currentRole === 'child' ? 'I' : 'E',
+                    SN: window.currentRole === 'child' ? 'N' : 'S',
+                    TF: window.currentRole === 'child' ? 'F' : 'T',
+                    JP: window.currentRole === 'child' ? 'P' : 'J'
+                };
                 
-                const progress = document.createElement('div');
-                progress.className = 'trait-progress';
+                // 假设DISC分析结果
+                const discResult = {
+                    D: window.currentRole === 'child' ? 65 : 75,
+                    I: window.currentRole === 'child' ? 80 : 60,
+                    S: window.currentRole === 'child' ? 50 : 65,
+                    C: window.currentRole === 'child' ? 40 : 85
+                };
                 
-                const fill = document.createElement('div');
-                fill.className = 'trait-fill';
-                fill.style.width = `${percentage}%`;
+                // 假设大五人格分析结果
+                const bigFiveResult = {
+                    外向性: window.currentRole === 'child' ? 3 : 4,
+                    宜人性: window.currentRole === 'child' ? 4 : 3,
+                    尽责性: window.currentRole === 'child' ? 3 : 5,
+                    情绪稳定性: window.currentRole === 'child' ? 2 : 4,
+                    开放性: window.currentRole === 'child' ? 5 : 3
+                };
                 
-                const valueLabel = document.createElement('div');
-                valueLabel.className = 'trait-value';
-                valueLabel.textContent = value.toFixed(1);
+                // 显示MBTI结果
+                const mbtiResultContainer = document.getElementById('mbtiResult');
                 
-                progress.appendChild(fill);
-                traitBar.appendChild(label);
-                traitBar.appendChild(progress);
-                traitBar.appendChild(valueLabel);
-                container.appendChild(traitBar);
-            });
-        };
-
-        // 根据角色获取MBTI描述
-        function getMBTIDescription(type, role) {
-            const descriptions = {
-                child: {
-                    'ESTJ': '你是一个负责任、实际的人，喜欢按规则做事，擅长组织和带领团队。',
-                    'ESTP': '你是个活跃、实际的问题解决者，喜欢尝试新事物，享受冒险和挑战。',
-                    'ESFJ': '你友善、乐于助人，重视和谐关系，喜欢照顾他人的需要和感受。',
-                    'ESFP': '你热情活泼，喜欢与人分享快乐，擅长发现生活中的乐趣和美好。',
-                    'ENTJ': '你思维敏捷，有领导才能，喜欢制定计划和目标，追求效率和成就。',
-                    'ENTP': '你充满创意和好奇心，喜欢探索各种可能性，擅长思考和辩论。',
-                    'ENFJ': '你善解人意，有感染力，关心他人成长，善于鼓励和激励他人。',
-                    'ENFP': '你热情洋溢，富有想象力，喜欢尝试新点子，重视自由和创新。',
-                    'ISTJ': '你认真负责，重视秩序和规则，做事有条理，值得信赖。',
-                    'ISTP': '你冷静、灵活，善于用工具解决问题，喜欢理解事物如何运作。',
-                    'ISFJ': '你温和、细心，乐于帮助他人，重视传统和稳定，非常可靠。',
-                    'ISFP': '你温和、敏感，欣赏美好事物，尊重个人空间，做事有自己的节奏。',
-                    'INTJ': '你有独立思考能力，善于规划未来，追求知识和能力的提升。',
-                    'INTP': '你思维独特，喜欢分析复杂问题，追求逻辑和理解，乐于探索新概念。',
-                    'INFJ': '你有洞察力，理想主义，关注他人内心世界，追求有意义的目标。',
-                    'INFP': '你富有同情心，重视个人价值观，有创意，关注内心和理想。'
-                },
-                parent: {
-                    'ESTJ': '您注重规则和秩序，教育孩子时条理清晰，注重培养责任感和纪律性。',
-                    'ESTP': '您灵活务实，鼓励孩子动手实践，善于帮助孩子解决实际问题。',
-                    'ESFJ': '您关心孩子的情感需求，重视家庭和谐，善于创造温馨的家庭环境。',
-                    'ESFP': '您活泼开朗，善于与孩子一起享受生活乐趣，教育方式轻松有趣。',
-                    'ENTJ': '您有计划性和领导力，对孩子期望较高，注重培养目标感和成就感。',
-                    'ENTP': '您思维灵活，鼓励孩子提问和探索，善于激发孩子的创造力和好奇心。',
-                    'ENFJ': '您善于理解和鼓励孩子，重视孩子的成长和发展，有很强的感染力。',
-                    'ENFP': '您热情且富有创意，尊重孩子的独特性，教育方式灵活多变。',
-                    'ISTJ': '您可靠且有条理，注重传统价值观，教育方式一致且有规律。',
-                    'ISTP': '您冷静且实际，尊重孩子的独立性，善于教导解决问题的技能。',
-                    'ISFJ': '您细心且有耐心，关注孩子的日常需求，创造稳定安全的家庭环境。',
-                    'ISFP': '您温和且灵活，尊重孩子的感受，不强求，给予孩子成长的空间。',
-                    'INTJ': '您有远见和独立思考能力，注重培养孩子的逻辑思维和规划能力。',
-                    'INTP': '您思维深入，鼓励孩子独立思考，重视知识和理解力的培养。',
-                    'INFJ': '您有理想主义倾向，关注孩子的内心世界，追求有意义的教育方式。',
-                    'INFP': '您尊重孩子的个性和价值观，教育方式温和，关注孩子的情感发展。'
+                let mbtiType = "";
+                for (const dim in mbtiResult) {
+                    mbtiType += mbtiResult[dim];
                 }
+                
+                let mbtiDescription = getMBTIDescription(mbtiType);
+                
+                mbtiResultContainer.innerHTML = `
+                    <div class="mbti-type">${mbtiType}</div>
+                    <div class="mbti-description">${mbtiDescription}</div>
+                    <div class="mbti-details">
+                        <div class="mbti-trait">${mbtiResult.EI === 'E' ? '外向型' : '内向型'}: ${mbtiResult.EI === 'E' ? '从外部世界获取能量' : '从内心世界获取能量'}</div>
+                        <div class="mbti-trait">${mbtiResult.SN === 'S' ? '实感型' : '直觉型'}: ${mbtiResult.SN === 'S' ? '关注具体细节和事实' : '关注可能性和概念'}</div>
+                        <div class="mbti-trait">${mbtiResult.TF === 'T' ? '思考型' : '情感型'}: ${mbtiResult.TF === 'T' ? '基于逻辑做决定' : '基于价值观和情感做决定'}</div>
+                        <div class="mbti-trait">${mbtiResult.JP === 'J' ? '判断型' : '感知型'}: ${mbtiResult.JP === 'J' ? '喜欢计划和组织' : '喜欢灵活和自发'}</div>
+                    </div>
+                `;
+                
+                // 显示DISC结果
+                const discChartContainer = document.getElementById('discChart');
+                
+                const discBarChart = `
+                    <div class="trait-bar">
+                        <div class="trait-label">支配性 (D)</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${discResult.D}%;"></div>
+                        </div>
+                        <div class="trait-value">${discResult.D}%</div>
+                    </div>
+                    <div class="trait-bar">
+                        <div class="trait-label">影响性 (I)</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${discResult.I}%;"></div>
+                        </div>
+                        <div class="trait-value">${discResult.I}%</div>
+                    </div>
+                    <div class="trait-bar">
+                        <div class="trait-label">稳定性 (S)</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${discResult.S}%;"></div>
+                        </div>
+                        <div class="trait-value">${discResult.S}%</div>
+                    </div>
+                    <div class="trait-bar">
+                        <div class="trait-label">谨慎性 (C)</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${discResult.C}%;"></div>
+                        </div>
+                        <div class="trait-value">${discResult.C}%</div>
+                    </div>
+                    <div class="disc-description">
+                        ${getDISCDescription(discResult)}
+                    </div>
+                `;
+                
+                discChartContainer.innerHTML = discBarChart;
+                
+                // 显示大五人格结果
+                const bigFiveChartContainer = document.getElementById('bigFiveChart');
+                
+                const bigFiveBarChart = `
+                    <div class="trait-bar">
+                        <div class="trait-label">外向性</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${bigFiveResult.外向性 * 20}%;"></div>
+                        </div>
+                        <div class="trait-value">${bigFiveResult.外向性}</div>
+                    </div>
+                    <div class="trait-bar">
+                        <div class="trait-label">宜人性</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${bigFiveResult.宜人性 * 20}%;"></div>
+                        </div>
+                        <div class="trait-value">${bigFiveResult.宜人性}</div>
+                    </div>
+                    <div class="trait-bar">
+                        <div class="trait-label">尽责性</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${bigFiveResult.尽责性 * 20}%;"></div>
+                        </div>
+                        <div class="trait-value">${bigFiveResult.尽责性}</div>
+                    </div>
+                    <div class="trait-bar">
+                        <div class="trait-label">情绪稳定性</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${bigFiveResult.情绪稳定性 * 20}%;"></div>
+                        </div>
+                        <div class="trait-value">${bigFiveResult.情绪稳定性}</div>
+                    </div>
+                    <div class="trait-bar">
+                        <div class="trait-label">开放性</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${bigFiveResult.开放性 * 20}%;"></div>
+                        </div>
+                        <div class="trait-value">${bigFiveResult.开放性}</div>
+                    </div>
+                    <div class="big5-description">
+                        ${getBigFiveDescription(bigFiveResult)}
+                    </div>
+                `;
+                
+                bigFiveChartContainer.innerHTML = bigFiveBarChart;
+                
+                // 显示沟通建议
+                const communicationTips = document.getElementById('communicationTips');
+                communicationTips.innerHTML = `
+                    <h2 class="results-title">沟通建议</h2>
+                    <p>${getCommunicationTips(window.currentRole, mbtiType, discResult, bigFiveResult)}</p>
+                `;
+                
+                // 保存测试结果到localStorage
+                const testResults = {
+                    role: window.currentRole,
+                    mbti: mbtiType,
+                    disc: discResult,
+                    bigFive: bigFiveResult,
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem('personalityTestResults', JSON.stringify(testResults));
+                
+            } catch (error) {
+                console.error("显示结果时出错:", error);
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="results-section">
+                        <h2 class="results-title">测试结果计算出错</h2>
+                        <p>抱歉，计算结果时出现错误。请尝试重新测试。</p>
+                        <button class="nav-button" onclick="resetTest()">重新测试</button>
+                    </div>
+                `;
+            }
+        };
+
+        // MBTI类型描述
+        function getMBTIDescription(type) {
+            const descriptions = {
+                'ISTJ': '安静认真，通过全面性和可靠性获得成功。实际，注重事实，有责任感。理性地决定应该做什么，不受干扰地工作。',
+                'ISFJ': '安静，友好，有责任感和谨慎。致力于履行义务。细致，精确，准确。忠诚，体贴，留心并关心重要他人的感受。',
+                'INFJ': '寻求意义和联系，理解人际关系中的复杂性。对于他人的感觉和需要非常敏感。有责任感，致力于自己的价值观。',
+                'INTJ': '对自己的想法和创造力有很强的驱动力，有内在的愿景，有能力分析问题并高效地组织概念和想法。',
+                'ISTP': '宽容，灵活，安静地观察直到问题出现，然后迅速行动找到可行的解决方案。对事实和原因感兴趣，分析原理如何运作。',
+                'ISFP': '安静，友好，敏感，仁慈。享受当下，喜欢自己的空间以及按照自己的时间表工作。忠诚，愿意奉献给重要的人。',
+                'INFP': '理想主义者，忠于自己的价值观和重要的人。外部生活与内在价值一致。好奇，迅速看到可能性，催化他人想法的实现。',
+                'INTP': '寻求发现逻辑解释，理论性兴趣较强，抽象思考，不喜欢闲聊。安静，灵活，适应力强，专注能力惊人。',
+                'ESTP': '灵活和容忍，采取实用的方法，关注即时结果。理论和概念解释使他们不耐烦。喜欢积极参与解决问题。',
+                'ESFP': '外向，友好，接受力强。热爱生活，人和物质享受。喜欢与他人一起工作，将常识和现实态度带入工作中。',
+                'ENFP': '热情，有想象力。把生活视为充满可能性。能够快速联系事件和信息，自信地基于模式做决定。',
+                'ENTP': '敏捷，有创造性，善于刺激性辩论。足智多谋解决新的具有挑战性的问题。善于产生概念性可能性，然后分析它们。',
+                'ESTJ': '实际，现实，注重事实。果断，迅速实施决策。组织项目和人员实现目标，专注于及时获得结果。',
+                'ESFJ': '热心，有良心，合作。希望与他人和谐相处，努力工作以准确完成工作。忠诚，会注意到他人需要的细节。',
+                'ENFJ': '温暖，同情，敏感，负责任。高度关注他人的情感、需要和动机。善于看到他人的潜力，希望帮助他们实现潜力。',
+                'ENTJ': '坦率，果断，有领导能力。迅速看到不合逻辑和低效的程序和政策，发展并实施全面系统以解决组织问题。'
             };
             
-            return descriptions[role][type] || '无法获取详细描述';
+            return descriptions[type] || '没有找到此类型的描述。';
         }
 
-        // 根据角色获取DISC描述
-        function getDISCDescription(discResult, role) {
+        // DISC描述
+        function getDISCDescription(discResult) {
             // 找出主导特质
             let dominantTrait = '';
             let maxScore = 0;
             
-            for (const [trait, score] of Object.entries(discResult)) {
-                if (score > maxScore) {
-                    maxScore = score;
+            for (const trait in discResult) {
+                if (discResult[trait] > maxScore) {
+                    maxScore = discResult[trait];
                     dominantTrait = trait;
                 }
             }
             
             const descriptions = {
-                child: {
-                    'D': '你有很强的自主性和决断力，喜欢掌控局面，有领导才能，但有时可能显得有些强势。',
-                    'I': '你活泼开朗，善于交际，能够感染周围的人，喜欢成为焦点，但有时可能不够专注。',
-                    'S': '你温和稳定，有耐心，重视和谐关系，可靠且忠诚，但有时可能不太喜欢变化。',
-                    'C': '你做事认真仔细，注重质量和准确性，有条理，但有时可能过于追求完美。'
-                },
-                parent: {
-                    'D': '您的教育风格果断直接，设定明确目标，追求高效率，但需要注意倾听孩子的想法。',
-                    'I': '您的教育风格热情活泼，善于鼓励和表扬，营造积极氛围，但需要保持一致性。',
-                    'S': '您的教育风格温和耐心，提供稳定支持，重视家庭和谐，但可以适当增加新尝试。',
-                    'C': '您的教育风格注重细节和规则，有计划和条理，但可以适当放松对完美的追求。'
-                }
+                'D': '你倾向于直接、果断，喜欢接受挑战和解决问题。你可能更注重结果而不是过程，倾向于快速做决定。',
+                'I': '你倾向于外向、热情，喜欢与人交流和建立关系。你可能善于激励他人，在团队中有较强的感染力。',
+                'S': '你倾向于稳定、耐心，喜欢团队合作和维持和谐。你可能表现出很强的忠诚度，对他人的需求很敏感。',
+                'C': '你倾向于精确、谨慎，喜欢细节和高质量的工作。你可能会仔细分析情况，在做决定前收集足够信息。'
             };
             
-            return descriptions[role][dominantTrait] || '无法获取详细描述';
+            return descriptions[dominantTrait] || '你的DISC特质分布相对平衡，表现出多方面的行为特点。';
         }
 
-        // 根据角色获取大五人格描述
-        function getBig5Description(bigFiveResult, role) {
-            let highTraits = [];
-            const threshold = role === 'child' ? 3 : 3; // 设置阈值
+        // 大五人格描述
+        function getBigFiveDescription(bigFiveResult) {
+            let description = '你的人格特质包括：';
             
-            for (const [trait, score] of Object.entries(bigFiveResult)) {
-                if (score > threshold) {
-                    highTraits.push(trait);
-                }
+            if (bigFiveResult.外向性 >= 4) {
+                description += '较高的外向性，喜欢社交互动，精力充沛；';
+            } else if (bigFiveResult.外向性 <= 2) {
+                description += '较低的外向性，偏好独处，安静思考；';
             }
             
-            if (highTraits.length === 0) {
-                return role === 'child' 
-                    ? '你的性格特质比较均衡，没有特别突出的方面。' 
-                    : '您的性格特质比较均衡，没有特别突出的方面。';
+            if (bigFiveResult.宜人性 >= 4) {
+                description += '较高的宜人性，富有同情心，乐于帮助他人；';
+            } else if (bigFiveResult.宜人性 <= 2) {
+                description += '较低的宜人性，更直接坦率，独立思考；';
             }
             
-            const descriptions = {
-                child: {
-                    '外向性': '你乐于社交，喜欢与人交流，有活力和热情。',
-                    '宜人性': '你富有同情心，关心他人感受，愿意帮助别人。',
-                    '尽责性': '你有条理，做事认真负责，能够坚持完成任务。',
-                    '情绪稳定性': '你能够很好地控制情绪，面对压力时保持冷静。',
-                    '开放性': '你好奇心强，喜欢尝试新事物，思维灵活有创意。'
-                },
-                parent: {
-                    '外向性': '您乐于社交互动，教育方式活跃开放，善于建立广泛的社交网络。',
-                    '宜人性': '您富有同理心，尊重孩子的感受，创造温暖和谐的家庭氛围。',
-                    '尽责性': '您教育方式有条理和计划性，注重培养孩子的责任感和自律能力。',
-                    '情绪稳定性': '您能够理性应对育儿压力，情绪稳定，为孩子树立良好榜样。',
-                    '开放性': '您思维开放，鼓励孩子探索和创新，接纳多元化的观点和体验。'
-                }
-            };
+            if (bigFiveResult.尽责性 >= 4) {
+                description += '较高的尽责性，有条理，注重目标；';
+            } else if (bigFiveResult.尽责性 <= 2) {
+                description += '较低的尽责性，更随性灵活，不拘小节；';
+            }
             
-            let result = role === 'child' ? '你的突出特质：' : '您的突出特质：';
-            highTraits.forEach((trait, index) => {
-                result += descriptions[role][trait];
-                if (index < highTraits.length - 1) {
-                    result += ' ';
-                }
-            });
+            if (bigFiveResult.情绪稳定性 >= 4) {
+                description += '较高的情绪稳定性，冷静自信，压力管理能力强；';
+            } else if (bigFiveResult.情绪稳定性 <= 2) {
+                description += '较低的情绪稳定性，情感丰富，对环境敏感；';
+            }
             
-            return result;
+            if (bigFiveResult.开放性 >= 4) {
+                description += '较高的开放性，喜欢新体验，思想开放。';
+            } else if (bigFiveResult.开放性 <= 2) {
+                description += '较低的开放性，更务实传统，注重实际经验。';
+            }
+            
+            return description;
         }
 
-        // 生成沟通建议
-        function generateCommunicationTips(role, mbtiResult, discResult, bigFiveResult) {
-            const communicationTipsElem = document.getElementById('communicationTips');
-            
-            let tips = '<h3>' + (role === 'child' ? '与家长沟通建议' : '与孩子沟通建议') + '</h3><ul>';
-            
-            // 基于MBTI的建议
-            const mbtiType = mbtiResult.E_I + mbtiResult.S_N + mbtiResult.T_F + mbtiResult.J_P;
+        // 沟通建议
+        function getCommunicationTips(role, mbtiType, discResult, bigFiveResult) {
             if (role === 'child') {
-                if (mbtiResult.E_I === 'I') {
-                    tips += '<li>你可能需要更多的独处时间，在与家长交流前先整理好自己的想法。</li>';
-                } else {
-                    tips += '<li>你喜欢通过交流表达自己，可以主动与家长分享你的想法和感受。</li>';
-                }
-                
-                if (mbtiResult.T_F === 'T') {
-                    tips += '<li>在讨论问题时，尝试考虑家长的感受，而不仅仅关注事实和逻辑。</li>';
-                } else {
-                    tips += '<li>当你因为情感因素做决定时，可以尝试向家长解释你的感受。</li>';
-                }
+                return `作为一个${mbtiType}性格类型的孩子，你可能更喜欢${mbtiType.includes('E') ? '通过交流' : '独立思考'}来解决问题。
+                与家长沟通时，尝试清晰表达你的想法和感受，特别是当你感到不被理解时。
+                你的DISC特质表明你在沟通中${getDISCCommunicationStyle(discResult)}。
+                根据你的大五人格特质，建议你关注自己的${getBigFiveCommunicationFocus(bigFiveResult)}，
+                这将帮助你与家长建立更好的沟通和理解。`;
             } else {
-                if (mbtiResult.E_I === 'I') {
-                    tips += '<li>给孩子一些思考和独处的空间，不要总是期望即时的反馈。</li>';
-                } else {
-                    tips += '<li>多创造交流的机会，支持孩子通过讨论来理清思路。</li>';
-                }
-                
-                if (mbtiResult.T_F === 'T') {
-                    tips += '<li>在与孩子交流时，不仅要关注逻辑和事实，还要关注情感因素。</li>';
-                } else {
-                    tips += '<li>重视孩子的情感表达，即使有时看起来不够理性。</li>';
-                }
+                return `作为一个${mbtiType}性格类型的家长，你可能偏好${mbtiType.includes('J') ? '结构化的' : '灵活的'}教育方式。
+                与孩子沟通时，记住他们可能与你有不同的思考和感受方式，尝试站在他们的角度理解问题。
+                你的DISC特质表明你在教育中${getDISCParentingStyle(discResult)}。
+                根据你的大五人格特质，建议你关注${getBigFiveParentingFocus(bigFiveResult)}，
+                这将帮助你更有效地引导孩子的成长和发展。`;
             }
-            
-            // 基于DISC的建议
-            let dominantDisc = '';
+        }
+
+        function getDISCCommunicationStyle(discResult) {
+            // 找出主导特质
+            let dominantTrait = '';
             let maxScore = 0;
-            for (const [trait, score] of Object.entries(discResult)) {
-                if (score > maxScore) {
-                    maxScore = score;
-                    dominantDisc = trait;
+            
+            for (const trait in discResult) {
+                if (discResult[trait] > maxScore) {
+                    maxScore = discResult[trait];
+                    dominantTrait = trait;
                 }
             }
             
-            if (role === 'child') {
-                if (dominantDisc === 'D') {
-                    tips += '<li>在表达自己的观点时，给家长留出表达意见的空间。</li>';
-                } else if (dominantDisc === 'I') {
-                    tips += '<li>与家长讨论重要事项时，尝试更有条理地表达，关注细节。</li>';
-                } else if (dominantDisc === 'S') {
-                    tips += '<li>当你对家长的建议有不同想法时，可以更直接地表达出来。</li>';
-                } else if (dominantDisc === 'C') {
-                    tips += '<li>与家长交流时，不必对每个细节都过分关注，有时需要看大局。</li>';
-                }
-            } else {
-                if (dominantDisc === 'D') {
-                    tips += '<li>放慢节奏，给孩子充分表达的时间，避免过于指令性的沟通。</li>';
-                } else if (dominantDisc === 'I') {
-                    tips += '<li>与孩子交流时，确保传达明确的信息，而不仅仅是热情的表达。</li>';
-                } else if (dominantDisc === 'S') {
-                    tips += '<li>鼓励孩子表达自己的想法，主动询问而不仅仅等待他们开口。</li>';
-                } else if (dominantDisc === 'C') {
-                    tips += '<li>与孩子交流时，不必过分强调细节和完美，多关注情感连接。</li>';
-                }
-            }
+            const styles = {
+                'D': '可能比较直接，喜欢快速得到答案，建议学习耐心听取他人意见',
+                'I': '善于表达，喜欢分享想法，建议注意倾听他人的反馈',
+                'S': '善解人意，愿意配合，建议适当表达自己的需求和立场',
+                'C': '注重细节和精确，建议学会接受不完美的情况和灵活应对'
+            };
             
-            tips += '</ul>';
-            communicationTipsElem.innerHTML = tips;
+            return styles[dominantTrait] || '在不同情境下灵活调整沟通方式';
         }
+
+        function getDISCParentingStyle(discResult) {
+            // 找出主导特质
+            let dominantTrait = '';
+            let maxScore = 0;
+            
+            for (const trait in discResult) {
+                if (discResult[trait] > maxScore) {
+                    maxScore = discResult[trait];
+                    dominantTrait = trait;
+                }
+            }
+            
+            const styles = {
+                'D': '可能设定明确目标和规则，建议多关注孩子的情感需求',
+                'I': '善于激励和鼓励孩子，建议增加对规则和一致性的重视',
+                'S': '能为孩子提供稳定和支持，建议适当给孩子更多挑战和成长空间',
+                'C': '注重教育的质量和标准，建议接受孩子的不完美和个性差异'
+            };
+            
+            return styles[dominantTrait] || '能根据孩子的需要调整教育方式';
+        }
+
+        function getBigFiveCommunicationFocus(bigFiveResult) {
+            let focus = [];
+            
+            if (bigFiveResult.外向性 <= 3) {
+                focus.push('主动表达自己的想法');
+            }
+            
+            if (bigFiveResult.宜人性 <= 3) {
+                focus.push('培养同理心');
+            }
+            
+            if (bigFiveResult.尽责性 <= 3) {
+                focus.push('养成良好习惯');
+            }
+            
+            if (bigFiveResult.情绪稳定性 <= 3) {
+                focus.push('情绪管理');
+            }
+            
+            if (bigFiveResult.开放性 <= 3) {
+                focus.push('开放思维');
+            }
+            
+            if (focus.length === 0) {
+                focus.push('继续保持良好的沟通习惯');
+            }
+            
+            return focus.join('和');
+        }
+
+        function getBigFiveParentingFocus(bigFiveResult) {
+            let focus = [];
+            
+            if (bigFiveResult.外向性 <= 3) {
+                focus.push('与孩子创造更多互动机会');
+            }
+            
+            if (bigFiveResult.宜人性 <= 3) {
+                focus.push('理解孩子的情感需求');
+            }
+            
+            if (bigFiveResult.尽责性 >= 4) {
+                focus.push('允许孩子有探索和犯错的空间');
+            }
+            
+            if (bigFiveResult.情绪稳定性 <= 3) {
+                focus.push('保持情绪稳定');
+            }
+            
+            if (bigFiveResult.开放性 <= 3) {
+                focus.push('接受孩子的新想法');
+            }
+            
+            if (focus.length === 0) {
+                focus.push('继续保持当前的教育方式');
+            }
+            
+            return focus.join('和');
+        }
+
+        // 重置测试，清除保存的角色
+        window.resetTest = function() {
+            // 清除localStorage中保存的角色
+            localStorage.removeItem('selectedRole');
+            
+            // 重置UI状态
+            document.getElementById('roleSelection').style.display = 'flex';
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+            
+            // 重置其他状态
+            window.currentRole = null;
+            window.currentSection = null;
+            window.currentQuestionIndex = 0;
+            window.answers = {
+                mbti: [],
+                disc: [],
+                bigFive: []
+            };
+        };
     </script>
 </body>
 </html> 

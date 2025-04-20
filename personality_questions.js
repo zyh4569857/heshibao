@@ -224,6 +224,8 @@ const questionBank = {
 
 // 测试结果分析函数
 function analyzeMBTI(answers) {
+    console.log("MBTI分析开始，收到答案:", answers);
+    
     const dimensions = {
         EI: { E: 0, I: 0 },
         SN: { S: 0, N: 0 },
@@ -234,18 +236,33 @@ function analyzeMBTI(answers) {
     answers.forEach(answer => {
         const dimension = answer.dimension;
         const value = answer.value;
-        dimensions[dimension][value]++;
+        
+        console.log(`处理答案: 维度=${dimension}, 值=${value}`);
+        
+        if (dimensions[dimension] && dimensions[dimension][value] !== undefined) {
+            dimensions[dimension][value]++;
+        } else {
+            console.error(`无效的维度或值: 维度=${dimension}, 值=${value}`);
+        }
     });
-
-    return {
+    
+    console.log("各维度得分:", dimensions);
+    
+    // 计算结果
+    const result = {
         E_I: dimensions.EI.E > dimensions.EI.I ? 'E' : 'I',
         S_N: dimensions.SN.S > dimensions.SN.N ? 'S' : 'N',
         T_F: dimensions.TF.T > dimensions.TF.F ? 'T' : 'F',
         J_P: dimensions.JP.J > dimensions.JP.P ? 'J' : 'P'
     };
+    
+    console.log("MBTI分析结果:", result);
+    return result;
 }
 
 function analyzeDISC(answers) {
+    console.log("DISC分析开始，收到答案:", answers);
+    
     const scores = {
         D: 0,
         I: 0,
@@ -254,14 +271,27 @@ function analyzeDISC(answers) {
     };
 
     answers.forEach(answer => {
-        if (answer.value.startsWith('非')) return;
-        scores[answer.value]++;
+        console.log(`处理答案: 值=${answer.value}`);
+        
+        if (answer.value.startsWith('非')) {
+            console.log(`跳过非X选项: ${answer.value}`);
+            return;
+        }
+        
+        if (scores[answer.value] !== undefined) {
+            scores[answer.value]++;
+        } else {
+            console.error(`无效的DISC值: ${answer.value}`);
+        }
     });
-
+    
+    console.log("DISC分析结果:", scores);
     return scores;
 }
 
 function analyzeBigFive(answers) {
+    console.log("大五人格分析开始，收到答案:", answers);
+    
     const dimensions = {
         外向性: 0,
         宜人性: 0,
@@ -271,9 +301,16 @@ function analyzeBigFive(answers) {
     };
 
     answers.forEach(answer => {
-        dimensions[answer.dimension] += answer.score;
+        console.log(`处理答案: 维度=${answer.dimension}, 分数=${answer.score}`);
+        
+        if (dimensions[answer.dimension] !== undefined) {
+            dimensions[answer.dimension] += answer.score;
+        } else {
+            console.error(`无效的大五人格维度: ${answer.dimension}`);
+        }
     });
-
+    
+    console.log("大五人格分析结果:", dimensions);
     return dimensions;
 }
 
