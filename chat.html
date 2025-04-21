@@ -198,6 +198,97 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .chat-input input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 25px;
+            margin-right: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .voice-input-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px !important;
+            margin-right: 10px;
+            background: linear-gradient(135deg, #8e44ad, #3498db) !important;
+        }
+
+        .voice-input-btn.recording {
+            background: linear-gradient(135deg, #c0392b, #e74c3c) !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+            }
+        }
+
+        .voice-input-status {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .voice-input-status.visible {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -211,6 +302,14 @@
         </div>
         <div class="chat-input">
             <input type="text" id="messageInput" placeholder="请输入您的消息...">
+            <button class="voice-input-btn" id="voiceInputButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+            </button>
             <button onclick="sendMessage()">发送</button>
         </div>
         <div class="summary-section">
@@ -934,6 +1033,116 @@ ${JSON.stringify(messages.filter(msg => msg.role !== 'system'), null, 2)}`;
                 sendMessage();
             }
         });
+
+        // 添加语音输入功能
+        const voiceInputButton = document.getElementById('voiceInputButton');
+        const messageInput = document.getElementById('messageInput');
+        let recognition;
+        let isRecording = false;
+
+        // 检查浏览器是否支持语音识别
+        function initSpeechRecognition() {
+            // 创建语音状态提示元素
+            const statusElement = document.createElement('div');
+            statusElement.className = 'voice-input-status';
+            statusElement.textContent = '正在聆听...';
+            document.body.appendChild(statusElement);
+
+            // 检查浏览器支持
+            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (window.SpeechRecognition) {
+                recognition = new window.SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = 'zh-CN'; // 设置中文识别
+                
+                // 识别结果事件
+                recognition.onresult = function(event) {
+                    const transcript = Array.from(event.results)
+                        .map(result => result[0])
+                        .map(result => result.transcript)
+                        .join('');
+                    
+                    messageInput.value = transcript;
+                };
+                
+                // 识别结束事件
+                recognition.onend = function() {
+                    stopRecording();
+                };
+                
+                // 识别错误事件
+                recognition.onerror = function(event) {
+                    console.error('语音识别错误:', event.error);
+                    stopRecording();
+                    if (event.error === 'no-speech') {
+                        showStatus('未检测到语音，请重试', 2000);
+                    } else {
+                        showStatus('语音识别失败，请重试', 2000);
+                    }
+                };
+                
+                // 绑定按钮点击事件
+                voiceInputButton.addEventListener('click', toggleRecording);
+            } else {
+                voiceInputButton.style.display = 'none';
+                console.error('此浏览器不支持语音识别功能');
+            }
+        }
+        
+        // 显示状态信息
+        function showStatus(message, duration = 1000) {
+            const statusElement = document.querySelector('.voice-input-status');
+            statusElement.textContent = message;
+            statusElement.classList.add('visible');
+            
+            setTimeout(() => {
+                statusElement.classList.remove('visible');
+            }, duration);
+        }
+        
+        // 切换录音状态
+        function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+        
+        // 开始录音
+        function startRecording() {
+            if (!recognition) return;
+            
+            try {
+                recognition.start();
+                isRecording = true;
+                voiceInputButton.classList.add('recording');
+                showStatus('正在聆听...', 60000); // 显示状态提示，最长60秒
+            } catch (err) {
+                console.error('语音识别启动失败:', err);
+                showStatus('语音识别启动失败，请重试', 2000);
+            }
+        }
+        
+        // 停止录音
+        function stopRecording() {
+            if (!recognition) return;
+            
+            try {
+                recognition.stop();
+            } catch (err) {
+                console.error('语音识别停止失败:', err);
+            }
+            
+            isRecording = false;
+            voiceInputButton.classList.remove('recording');
+            document.querySelector('.voice-input-status').classList.remove('visible');
+        }
+        
+        // 页面加载时初始化语音识别
+        document.addEventListener('DOMContentLoaded', initSpeechRecognition);
     </script>
 </body>
 </html>

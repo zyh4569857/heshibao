@@ -73,9 +73,380 @@
         .role-button:active {
             transform: translateY(0);
         }
+
+        /* 用户注册区域样式 */
+        .user-auth-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 450px;
+            margin: 2rem auto;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.8rem;
+            font-size: 1.1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            color: #7f8c8d;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .auth-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .auth-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+            outline: none;
+        }
+
+        .verify-code-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .verify-code-group .auth-input {
+            flex: 1;
+        }
+
+        .send-code-btn {
+            padding: 0.8rem 1rem;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .send-code-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .send-code-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .auth-btn {
+            padding: 1rem;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .auth-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+            text-align: left;
+            display: none;
+        }
+
+        .auth-footer {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .auth-footer a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 登录成功状态 */
+        .user-info {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .user-info.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .user-phone {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            text-decoration: underline;
+        }
+
+        .logout-btn:hover {
+            color: #c0392b;
+        }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .auth-modal {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 450px;
+            padding: 2rem;
+            position: relative;
+            transform: translateY(30px);
+            transition: all 0.4s ease;
+        }
+
+        .modal-overlay.active .auth-modal {
+            transform: translateY(0);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #95a5a6;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .close-modal:hover {
+            color: #e74c3c;
+            transform: rotate(90deg);
+        }
+
+        .logged-user-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+            animation: slideInFromTop 0.5s ease;
+        }
+
+        @keyframes slideInFromTop {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logged-user-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .logged-user-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-right: 10px;
+        }
+
+        .login-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <!-- 弹窗注册/登录区域 -->
+    <div class="modal-overlay" id="authModal">
+        <div class="auth-modal">
+            <button class="close-modal" id="closeModal">×</button>
+            
+            <!-- 用户注册/登录区域 -->
+            <div class="user-auth-container" id="authContainer">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="register">注册</button>
+                    <button class="auth-tab" data-tab="login">登录</button>
+                </div>
+                
+                <!-- 注册表单 -->
+                <form class="auth-form" id="registerForm">
+                    <div class="input-group">
+                        <input type="tel" class="auth-input" id="registerPhone" placeholder="请输入手机号码" maxlength="11">
+                        <div class="error-message" id="registerPhoneError">请输入有效的手机号码</div>
+                    </div>
+                    <div class="input-group verify-code-group">
+                        <input type="text" class="auth-input" id="registerCode" placeholder="验证码" maxlength="6">
+                        <button type="button" class="send-code-btn" id="sendCodeBtn">发送验证码</button>
+                    </div>
+                    <div class="error-message" id="registerCodeError">请输入正确的验证码</div>
+                    <button type="submit" class="auth-btn" id="registerBtn">注册</button>
+                    <div class="auth-footer">
+                        注册即表示您同意 <a href="#">服务条款</a> 和 <a href="#">隐私政策</a>
+                    </div>
+                </form>
+                
+                <!-- 登录表单 -->
+                <form class="auth-form" id="loginForm" style="display: none;">
+                    <div class="input-group">
+                        <input type="tel" class="auth-input" id="loginPhone" placeholder="请输入手机号码" maxlength="11">
+                        <div class="error-message" id="loginPhoneError">请输入有效的手机号码</div>
+                    </div>
+                    <div class="input-group verify-code-group">
+                        <input type="text" class="auth-input" id="loginCode" placeholder="验证码" maxlength="6">
+                        <button type="button" class="send-code-btn" id="loginSendCodeBtn">发送验证码</button>
+                    </div>
+                    <div class="error-message" id="loginCodeError">请输入正确的验证码</div>
+                    <button type="submit" class="auth-btn" id="loginBtn">登录</button>
+                </form>
+
+                <!-- 用户登录成功显示区域 -->
+                <div class="user-info" id="userInfo">
+                    <p>欢迎回来，<span class="user-phone" id="userPhoneDisplay"></span></p>
+                    <button class="logout-btn" id="logoutBtn">退出登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 已登录用户信息显示 -->
+    <div class="logged-user-info" id="loggedUserInfo" style="display: none;">
+        <div class="user-avatar" id="userAvatar">用</div>
+        <div class="logged-user-actions">
+            <span class="logged-user-name" id="headerUserPhone"></span>
+            <button class="login-btn" id="headerLogoutBtn">退出</button>
+        </div>
+    </div>
+
     <div class="container">
         <div class="logo-container">
             <h1 class="title">和事宝</h1>
@@ -84,6 +455,7 @@
                 <p class="description">让沟通更简单，让家庭更和谐</p>
             </div>
         </div>
+
         <div class="features">
             <div class="feature-item">
                 <div class="feature-icon">👨‍👩‍👧‍👦</div>
@@ -100,8 +472,335 @@
         </div>
         <div class="cta-section">
             <p class="cta-text">准备好开始了吗？</p>
-            <a href="choice.html" class="enter-link">立即开始</a>
+            <a href="choice.html" class="enter-link" id="enterButton">立即开始</a>
         </div>
     </div>
+
+    <script>
+        // 验证码相关变量
+        let codeCooldown = 0;
+        let cooldownInterval;
+        const COOLDOWN_TIME = 60; // 冷却时间（秒）
+        
+        // 模拟验证码（实际应用中应该由后端生成并验证）
+        let currentVerificationCode = "";
+        let registeredUsers = [];
+
+        // 从localStorage加载用户数据
+        function loadUserData() {
+            const savedUsers = localStorage.getItem('registeredUsers');
+            if (savedUsers) {
+                registeredUsers = JSON.parse(savedUsers);
+            }
+            
+            // 检查当前登录状态
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                const userPhone = JSON.parse(currentUser).phone;
+                showLoggedInState(userPhone);
+                hideAuthModal();
+                showHeaderUserInfo(userPhone);
+            } else {
+                // 如果用户未登录，显示弹窗
+                showAuthModal();
+            }
+        }
+
+        // 显示登录/注册弹窗
+        function showAuthModal() {
+            const authModal = document.getElementById('authModal');
+            authModal.classList.add('active');
+            // 防止背景滚动
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 隐藏登录/注册弹窗
+        function hideAuthModal() {
+            const authModal = document.getElementById('authModal');
+            authModal.classList.remove('active');
+            // 恢复背景滚动
+            document.body.style.overflow = 'auto';
+        }
+
+        // 在顶部显示用户信息
+        function showHeaderUserInfo(phone) {
+            const loggedUserInfo = document.getElementById('loggedUserInfo');
+            const headerUserPhone = document.getElementById('headerUserPhone');
+            const userAvatar = document.getElementById('userAvatar');
+            
+            // 设置用户信息
+            headerUserPhone.textContent = phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+            userAvatar.textContent = phone.substring(0, 1);
+            
+            // 显示用户信息栏
+            loggedUserInfo.style.display = 'flex';
+        }
+
+        // 隐藏顶部用户信息
+        function hideHeaderUserInfo() {
+            const loggedUserInfo = document.getElementById('loggedUserInfo');
+            loggedUserInfo.style.display = 'none';
+        }
+
+        // 保存用户数据到localStorage
+        function saveUserData() {
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+        }
+
+        // 模拟发送验证码
+        function sendVerificationCode(phone) {
+            // 生成6位随机数字验证码
+            currentVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+            console.log(`发送验证码到 ${phone}: ${currentVerificationCode}`);
+            alert(`测试环境：您的验证码是 ${currentVerificationCode}`);
+            
+            // 启动冷却计时
+            startCooldown();
+        }
+
+        // 开始冷却计时
+        function startCooldown() {
+            const sendCodeBtn = document.getElementById('sendCodeBtn');
+            const loginSendCodeBtn = document.getElementById('loginSendCodeBtn');
+            
+            codeCooldown = COOLDOWN_TIME;
+            updateCooldownButtons();
+            
+            cooldownInterval = setInterval(() => {
+                codeCooldown--;
+                updateCooldownButtons();
+                
+                if (codeCooldown <= 0) {
+                    clearInterval(cooldownInterval);
+                    sendCodeBtn.disabled = false;
+                    loginSendCodeBtn.disabled = false;
+                    sendCodeBtn.textContent = '发送验证码';
+                    loginSendCodeBtn.textContent = '发送验证码';
+                }
+            }, 1000);
+        }
+
+        // 更新冷却按钮显示
+        function updateCooldownButtons() {
+            const sendCodeBtn = document.getElementById('sendCodeBtn');
+            const loginSendCodeBtn = document.getElementById('loginSendCodeBtn');
+            
+            sendCodeBtn.disabled = true;
+            loginSendCodeBtn.disabled = true;
+            sendCodeBtn.textContent = `重新发送(${codeCooldown}s)`;
+            loginSendCodeBtn.textContent = `重新发送(${codeCooldown}s)`;
+        }
+
+        // 验证手机号格式
+        function validatePhoneNumber(phone) {
+            const phoneRegex = /^1[3456789]\d{9}$/;
+            return phoneRegex.test(phone);
+        }
+
+        // 显示错误消息
+        function showError(elementId, show) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // 注册新用户
+        function registerUser(phone) {
+            // 检查用户是否已注册
+            const existingUser = registeredUsers.find(user => user.phone === phone);
+            if (!existingUser) {
+                const newUser = {
+                    phone: phone,
+                    registeredAt: new Date().toISOString()
+                };
+                registeredUsers.push(newUser);
+                saveUserData();
+            }
+            
+            // 自动登录
+            loginUser(phone);
+            return true;
+        }
+
+        // 登录用户
+        function loginUser(phone) {
+            const currentUser = {
+                phone: phone,
+                loginAt: new Date().toISOString()
+            };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showLoggedInState(phone);
+            hideAuthModal();
+            showHeaderUserInfo(phone);
+        }
+
+        // 显示已登录状态
+        function showLoggedInState(phone) {
+            // 隐藏登录/注册表单
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('authContainer').classList.add('logged-in');
+            
+            // 显示用户信息
+            const userInfo = document.getElementById('userInfo');
+            const userPhoneDisplay = document.getElementById('userPhoneDisplay');
+            
+            userInfo.classList.add('active');
+            userPhoneDisplay.textContent = phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('currentUser');
+            
+            // 重置UI
+            document.getElementById('userInfo').classList.remove('active');
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('authContainer').classList.remove('logged-in');
+            
+            // 重置表单
+            document.getElementById('registerForm').reset();
+            document.getElementById('loginForm').reset();
+            
+            // 隐藏顶部用户信息
+            hideHeaderUserInfo();
+            
+            // 显示登录弹窗
+            showAuthModal();
+        }
+
+        // 页面加载时设置事件监听
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加载用户数据
+            loadUserData();
+            
+            // 关闭弹窗按钮事件
+            document.getElementById('closeModal').addEventListener('click', () => {
+                hideAuthModal();
+            });
+            
+            // 点击弹窗背景关闭弹窗
+            document.getElementById('authModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('authModal')) {
+                    hideAuthModal();
+                }
+            });
+            
+            // 顶部退出按钮
+            document.getElementById('headerLogoutBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+            
+            // 切换注册/登录选项卡
+            const tabs = document.querySelectorAll('.auth-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.getAttribute('data-tab');
+                    
+                    // 更新选项卡状态
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // 切换表单
+                    document.getElementById('registerForm').style.display = tabName === 'register' ? 'flex' : 'none';
+                    document.getElementById('loginForm').style.display = tabName === 'login' ? 'flex' : 'none';
+                });
+            });
+            
+            // 注册表单发送验证码按钮
+            document.getElementById('sendCodeBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                const phone = document.getElementById('registerPhone').value.trim();
+                
+                if (validatePhoneNumber(phone)) {
+                    showError('registerPhoneError', false);
+                    sendVerificationCode(phone);
+                } else {
+                    showError('registerPhoneError', true);
+                }
+            });
+            
+            // 登录表单发送验证码按钮
+            document.getElementById('loginSendCodeBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                const phone = document.getElementById('loginPhone').value.trim();
+                
+                if (validatePhoneNumber(phone)) {
+                    showError('loginPhoneError', false);
+                    sendVerificationCode(phone);
+                } else {
+                    showError('loginPhoneError', true);
+                }
+            });
+            
+            // 注册表单提交
+            document.getElementById('registerForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const phone = document.getElementById('registerPhone').value.trim();
+                const code = document.getElementById('registerCode').value.trim();
+                let isValid = true;
+                
+                if (!validatePhoneNumber(phone)) {
+                    showError('registerPhoneError', true);
+                    isValid = false;
+                } else {
+                    showError('registerPhoneError', false);
+                }
+                
+                if (code !== currentVerificationCode || code.length === 0) {
+                    showError('registerCodeError', true);
+                    isValid = false;
+                } else {
+                    showError('registerCodeError', false);
+                }
+                
+                if (isValid) {
+                    registerUser(phone);
+                }
+            });
+            
+            // 登录表单提交
+            document.getElementById('loginForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const phone = document.getElementById('loginPhone').value.trim();
+                const code = document.getElementById('loginCode').value.trim();
+                let isValid = true;
+                
+                if (!validatePhoneNumber(phone)) {
+                    showError('loginPhoneError', true);
+                    isValid = false;
+                } else {
+                    showError('loginPhoneError', false);
+                }
+                
+                const userExists = registeredUsers.some(user => user.phone === phone);
+                
+                if (!userExists) {
+                    showError('loginPhoneError', true);
+                    document.getElementById('loginPhoneError').textContent = '该手机号尚未注册';
+                    isValid = false;
+                }
+                
+                if (code !== currentVerificationCode || code.length === 0) {
+                    showError('loginCodeError', true);
+                    isValid = false;
+                } else {
+                    showError('loginCodeError', false);
+                }
+                
+                if (isValid) {
+                    loginUser(phone);
+                }
+            });
+            
+            // 退出登录按钮
+            document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                logout();
+            });
+        });
+    </script>
 </body>
 </html> 
