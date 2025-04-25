@@ -342,9 +342,9 @@
     </div>
 
     <script>
-        // API配置
-        const API_KEY = '4b3ed3f4-a392-4e7f-922a-42dbaf6d8e64';
-        const API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+        // API配置 - 更新为火山方舟 DeepSeek V3
+        const API_KEY = 'a7f1834b-91db-4c53-bf28-f5f8b31ffe14'; // 替换为您的火山方舟 API Key
+        const API_URL = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions'; // 火山方舟 API 地址
         
         // 获取URL参数中的角色
         const urlParams = new URLSearchParams(window.location.search);
@@ -415,21 +415,31 @@
             const message = input.value.trim();
             
             if (message) {
-                // 添加用户消息到界面
-                addMessage(message, 'user');
+                // 根据角色添加前缀
+                const prefix = role === 'child' ? '孩子说：' : '父母说：';
+                const prefixedMessage = prefix + message;
+
+                // 添加带前缀的用户消息到界面
+                addMessage(prefixedMessage, 'user');
                 input.value = '';
                 
-                // 添加用户消息到对话历史
-                messages.push({ role: "user", content: message });
+                // 添加带前缀的用户消息到对话历史
+                messages.push({ role: "user", content: prefixedMessage });
+                
+                // 显示加载状态 - 稍后移除
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'message bot-message loading';
+                loadingDiv.textContent = '正在思考...';
+                document.getElementById('chatMessages').appendChild(loadingDiv);
+                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; // 滚动到底部
+
+                // 创建用于显示流式响应的元素
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.className = 'message bot-message';
+                let botResponseContent = ''; // 用于累积流式内容
                 
                 try {
-                    // 显示加载状态
-                    const loadingDiv = document.createElement('div');
-                    loadingDiv.className = 'message bot-message loading';
-                    loadingDiv.textContent = '正在思考...';
-                    document.getElementById('chatMessages').appendChild(loadingDiv);
-                    
-                    // 调用API
+                    // 调用火山方舟 API
                     const response = await fetch(API_URL, {
                         method: 'POST',
                         headers: {
@@ -437,35 +447,103 @@
                             'Authorization': `Bearer ${API_KEY}`
                         },
                         body: JSON.stringify({
-                            model: "deepseek-r1-250120",
-                            messages: messages,
-                            timeout: 60
+                            model: "deepseek-v3-250324", // 使用 DeepSeek V3 模型
+                            messages: messages, // 使用包含前缀的消息历史
+                            stream: true, // 开启流式输出
+                            temperature: 0.6 // 设置温度
+                            // 注意：fetch API 本身不直接支持 timeout 参数，超时通常在服务器端或通过 AbortController 实现
                         })
+                        // 如果需要设置前端超时，可以使用 AbortController
+                        // const controller = new AbortController();
+                        // const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
+                        // signal: controller.signal
                     });
 
+                    // 请求发出后，可以移除"正在思考"提示，并添加空的机器人消息框
+                    loadingDiv.remove();
+                    document.getElementById('chatMessages').appendChild(botMessageDiv);
+                    document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+
                     if (!response.ok) {
-                        throw new Error('API请求失败');
+                        // 尝试读取错误信息
+                        let errorData = null;
+                        try {
+                            errorData = await response.json();
+                        } catch(e) {
+                            // 如果响应体不是JSON或为空
+                            errorData = { message: response.statusText };
+                        }
+                        // 特别处理认证错误
+                        if (response.status === 401) {
+                             throw new Error(`API认证失败: ${errorData?.error?.message || '请检查您的API Key是否正确或有效。'}`);
+                        }
+                        throw new Error(`API请求失败，状态码: ${response.status}. ${errorData?.error?.message || errorData?.message || ''}`);
                     }
 
-                    const data = await response.json();
-                    const botResponse = data.choices[0].message.content;
+                    // 处理流式响应
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
                     
-                    // 移除加载状态
-                    loadingDiv.remove();
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value, { stream: true });
+                        // 处理一个 chunk 可能包含多个 SSE 事件的情况
+                        const lines = chunk.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data:')) {
+                                const jsonData = line.substring(5).trim(); // 移除 'data:' 前缀并去除空格
+                                if (jsonData === '[DONE]') {
+                                    // 流结束标志
+                                    break; 
+                                }
+                                try {
+                                    const data = JSON.parse(jsonData);
+                                    const content = data.choices[0]?.delta?.content;
+                                    if (content) {
+                                        botResponseContent += content;
+                                        // 使用 textContent 更新，避免 XSS 风险
+                                        botMessageDiv.textContent = botResponseContent; 
+                                        // 持续滚动到底部
+                                        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+                                    }
+                                } catch (e) {
+                                    console.error('解析流数据块中的JSON时出错:', e, '原始数据块:', jsonData);
+                                    // 可以在这里添加一些错误处理逻辑，比如显示一个错误消息或跳过这个数据块
+                                }
+                            }
+                        }
+                    }
                     
-                    // 添加机器人回复到界面
-                    addMessage(botResponse, 'bot');
-                    
-                    // 添加机器人回复到对话历史
-                    messages.push({ role: "assistant", content: botResponse });
-
-                    // 更新对话总结
-                    updateSummary(message, botResponse);
+                    // 流结束后，将完整的机器人回复添加到对话历史
+                    if (botResponseContent) {
+                         messages.push({ role: "assistant", content: botResponseContent });
+                         // 更新对话总结（如果需要）
+                         // 注意：updateSummary 现在接收的是带前缀的用户消息
+                         updateSummary(prefixedMessage, botResponseContent); 
+                    } else {
+                         console.warn("流式响应未包含任何内容。");
+                         // 可以选择添加一条提示消息
+                         // addMessage('未能从AI获取有效回复。', 'bot');
+                    }
                     
                 } catch (error) {
-                    console.error('Error:', error);
-                    loadingDiv.remove();
-                    addMessage('抱歉，我现在遇到了一些问题。请稍后再试。', 'bot');
+                    console.error('API 调用或处理过程中出错:', error);
+                    // 确保移除加载提示（如果它还在的话）
+                    const existingLoadingDiv = document.querySelector('.message.bot-message.loading');
+                    if (existingLoadingDiv) {
+                        existingLoadingDiv.remove();
+                    }
+                     // 移除可能已添加的空消息框
+                    if (botMessageDiv.parentNode && !botMessageDiv.textContent) {
+                         botMessageDiv.remove();
+                    }
+                    // 显示错误消息给用户
+                    addMessage(`抱歉，处理您的请求时遇到问题：${error.message}`, 'bot');
+                } finally {
+                     // 可以在这里清除超时设置（如果使用了 AbortController）
+                     // clearTimeout(timeoutId);
                 }
             }
         }
@@ -474,9 +552,11 @@
             const messagesDiv = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}-message`;
-            messageDiv.textContent = text;
+            // 使用 textContent 来设置内容，更安全
+            messageDiv.textContent = text; 
             messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            // 确保每次添加消息后都滚动到底部
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; 
         }
 
         // 更新对话总结

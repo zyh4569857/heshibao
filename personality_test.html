@@ -1225,3 +1225,288 @@
     </script>
 </body>
 </html> 
+    <script>
+        // ... existing code ...
+
+        // 全局变量，用于存储测试结果
+        let testResults = {}; 
+
+        // ... existing code ...
+
+        // 计算测试结果
+        window.calculateResults = function() {
+            console.log("开始计算测试结果...");
+            console.log("用户答案:", window.answers);
+
+            // --- MBTI 计算 ---
+            let mbtiScores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+            const mbtiQuestions = window.questionBank[window.currentRole].mbti;
+            for (let i = 0; i < mbtiQuestions.length; i++) {
+                const answerIndex = window.answers.mbti[i];
+                if (answerIndex !== undefined && mbtiQuestions[i].options[answerIndex]) {
+                    const dimension = mbtiQuestions[i].options[answerIndex].dimension;
+                    if (dimension && mbtiScores.hasOwnProperty(dimension)) {
+                        mbtiScores[dimension]++;
+                    }
+                }
+            }
+            let mbtiType = "";
+            mbtiType += (mbtiScores.E >= mbtiScores.I) ? 'E' : 'I';
+            mbtiType += (mbtiScores.S >= mbtiScores.N) ? 'S' : 'N';
+            mbtiType += (mbtiScores.T >= mbtiScores.F) ? 'T' : 'F';
+            mbtiType += (mbtiScores.J >= mbtiScores.P) ? 'J' : 'P';
+            console.log("MBTI 分数:", mbtiScores);
+            console.log("MBTI 类型:", mbtiType);
+
+
+            // --- DISC 计算 ---
+            let discScores = { D: 0, I: 0, S: 0, C: 0 };
+            const discQuestions = window.questionBank[window.currentRole].disc;
+            for (let i = 0; i < discQuestions.length; i++) {
+                const answerIndex = window.answers.disc[i];
+                 if (answerIndex !== undefined && discQuestions[i].options[answerIndex]) {
+                    const dimension = discQuestions[i].options[answerIndex].dimension;
+                     if (dimension && discScores.hasOwnProperty(dimension)) {
+                        discScores[dimension]++;
+                    }
+                }
+            }
+             // 简单的 DISC 主导类型确定（可以根据需要实现更复杂的逻辑）
+            let dominantDisc = Object.keys(discScores).reduce((a, b) => discScores[a] > discScores[b] ? a : b);
+            console.log("DISC 分数:", discScores);
+            console.log("DISC 主导类型:", dominantDisc);
+
+
+            // --- 大五人格计算 ---
+            let bigFiveScores = { O: 0, C: 0, E: 0, A: 0, N: 0 };
+            const bigFiveQuestions = window.questionBank[window.currentRole].bigFive;
+            for (let i = 0; i < bigFiveQuestions.length; i++) {
+                const answerValue = window.answers.bigFive[i]; // 分数 1-5
+                if (answerValue !== undefined) {
+                    const dimension = bigFiveQuestions[i].dimension;
+                    const reversed = bigFiveQuestions[i].reversed || false;
+                    let score = answerValue;
+                    // 处理反向计分题
+                    if (reversed) {
+                        score = 6 - answerValue;
+                    }
+                    if (dimension && bigFiveScores.hasOwnProperty(dimension)) {
+                        bigFiveScores[dimension] += score;
+                    }
+                }
+            }
+             // 可以将原始分数转换为百分比或其他标准化分数
+            console.log("大五人格原始分数:", bigFiveScores);
+
+
+            // 将计算结果存储在全局变量中
+            testResults = {
+                mbti: { type: mbtiType, scores: mbtiScores },
+                disc: { dominant: dominantDisc, scores: discScores },
+                bigFive: { scores: bigFiveScores }
+            };
+
+            console.log("计算完成的测试结果:", testResults);
+            return testResults; // 返回计算结果
+        };
+
+
+        // 显示测试结果
+        window.showResults = function() {
+            console.log("开始显示测试结果...");
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+
+            // 首先计算结果
+            const results = calculateResults(); // 调用计算函数获取动态结果
+
+            if (!results) {
+                console.error("无法获取计算结果！");
+                alert("计算结果时出错，请重试。");
+                return;
+            }
+             console.log("用于显示的结果:", results);
+
+
+            // --- 显示 MBTI 结果 ---
+            const mbtiResultContainer = document.getElementById('mbtiResult');
+            mbtiResultContainer.innerHTML = ''; // 清空旧内容
+            if (results.mbti && results.mbti.type) {
+                 const mbtiData = window.personalityDescriptions.mbti[results.mbti.type];
+                 if (mbtiData) {
+                    mbtiResultContainer.innerHTML = `
+                        <div class="role-title-result">
+                            <span class="role-icon">${window.currentRole === 'child' ? '👶' : '👨‍👩'}</span>
+                            您的 MBTI 类型: <span class="mbti-type">${results.mbti.type} (${mbtiData.name})</span>
+                        </div>
+                        <p class="mbti-description">${mbtiData.description}</p>
+                        <div class="mbti-details">
+                            <p class="mbti-trait"><strong>优势:</strong> ${mbtiData.strengths.join(', ')}</p>
+                            <p class="mbti-trait"><strong>发展建议:</strong> ${mbtiData.weaknesses.join(', ')}</p>
+                        </div>
+                    `;
+                } else {
+                     mbtiResultContainer.textContent = `计算出的 MBTI 类型: ${results.mbti.type} (描述信息未找到)`;
+                }
+            } else {
+                mbtiResultContainer.textContent = '未能计算出 MBTI 类型。';
+            }
+
+
+            // --- 显示 DISC 结果 (示例：简单文本，可以替换为图表) ---
+            const discSection = document.getElementById('discSection');
+             const discChartContainer = document.getElementById('discChart');
+             discChartContainer.innerHTML = ''; // 清空旧内容
+             if (results.disc && results.disc.scores) {
+                 // 这里可以添加绘制 DISC 图表的代码 (例如使用 Chart.js)
+                 // 暂时用文本显示分数
+                 let discText = '<h3>DISC 分数:</h3><ul>';
+                 for (const [key, value] of Object.entries(results.disc.scores)) {
+                     discText += `<li>${key}: ${value}</li>`;
+                 }
+                 discText += '</ul>';
+                 discChartContainer.innerHTML = discText;
+
+                 // 添加 DISC 描述
+                 const discDesc = window.personalityDescriptions.disc[results.disc.dominant];
+                 if(discDesc) {
+                     const descElement = document.createElement('div');
+                     descElement.className = 'disc-description';
+                     descElement.innerHTML = `
+                         <p><strong>您的主导行为风格: ${results.disc.dominant} (${discDesc.name})</strong></p>
+                         <p>${discDesc.description}</p>
+                     `;
+                     // 将描述添加到 DISC Section，而不是 Chart 容器
+                     // 确保只添加一次
+                     const existingDesc = discSection.querySelector('.disc-description');
+                     if (existingDesc) {
+                         existingDesc.remove();
+                     }
+                     discSection.appendChild(descElement);
+                 }
+
+             } else {
+                 discChartContainer.textContent = '未能计算出 DISC 分数。';
+             }
+
+
+            // --- 显示大五人格结果 (示例：进度条) ---
+            const bigFiveSection = document.getElementById('bigFiveSection');
+            const bigFiveChartContainer = document.getElementById('bigFiveChart');
+            bigFiveChartContainer.innerHTML = ''; // 清空旧内容
+            if (results.bigFive && results.bigFive.scores) {
+                const bigFiveMapping = { O: '开放性 (Openness)', C: '尽责性 (Conscientiousness)', E: '外向性 (Extraversion)', A: '宜人性 (Agreeableness)', N: '神经质性 (Neuroticism)' };
+                // 假设每个维度的最高可能原始分是 5 * (题目数 / 5)
+                // 需要根据实际题目数量调整最大值
+                const maxScorePerDimension = 5 * (window.questionBank[window.currentRole].bigFive.length / 5); // 粗略估计
+
+                for (const [key, value] of Object.entries(results.bigFive.scores)) {
+                    const percentage = Math.max(0, Math.min(100, Math.round((value / maxScorePerDimension) * 100))); // 转换为百分比
+                    const traitBar = document.createElement('div');
+                    traitBar.className = 'trait-bar';
+                    traitBar.innerHTML = `
+                        <div class="trait-label">${bigFiveMapping[key] || key}</div>
+                        <div class="trait-progress">
+                            <div class="trait-fill" style="width: ${percentage}%;"></div>
+                        </div>
+                        <div class="trait-value">${percentage}%</div>
+                    `;
+                    bigFiveChartContainer.appendChild(traitBar);
+                }
+
+                 // 添加大五人格整体描述（如果需要）
+                 const big5DescElement = document.createElement('div');
+                 big5DescElement.className = 'big5-description';
+                 // 可以根据分数高低组合生成描述
+                 big5DescElement.innerHTML = `<p>以上是大五人格各维度的得分情况。</p>`;
+                 // 确保只添加一次
+                 const existingDesc = bigFiveSection.querySelector('.big5-description');
+                 if (existingDesc) {
+                     existingDesc.remove();
+                 }
+                 bigFiveSection.appendChild(big5DescElement);
+
+            } else {
+                bigFiveChartContainer.textContent = '未能计算出大五人格分数。';
+            }
+
+            // --- 显示沟通建议 ---
+            const tipsContainer = document.getElementById('communicationTips');
+            tipsContainer.innerHTML = ''; // 清空旧内容
+            // 基于计算出的结果生成沟通建议
+            // 这是一个复杂逻辑，需要结合家长和孩子的测试结果
+            // 暂时留空或显示通用提示
+            tipsContainer.innerHTML = `
+                <h3>沟通建议</h3>
+                <p>（这里将根据您和孩子的性格测试结果生成个性化的沟通建议）</p>
+                <p>请点击“开始对话”将测试结果发送给 AI，获取更详细的分析和建议。</p>
+            `;
+
+
+            console.log("结果显示完成。");
+        };
+
+        // 开始对话按钮的逻辑
+        window.startChatWithAlert = function() {
+            console.log("点击了开始对话按钮");
+            // 确保结果已经计算并存储在 testResults 中
+            if (!testResults || Object.keys(testResults).length === 0) {
+                 console.warn("测试结果尚未计算或为空，尝试重新计算...");
+                 calculateResults(); // 尝试再次计算
+                 if (!testResults || Object.keys(testResults).length === 0) {
+                     alert("无法获取测试结果，请先完成测试。");
+                     console.error("无法获取或计算测试结果。");
+                     return;
+                 }
+            }
+
+            try {
+                // 将最终结果保存到 localStorage
+                localStorage.setItem('personalityResults', JSON.stringify(testResults));
+                localStorage.setItem('selectedRole', window.currentRole); // 确保存储了角色
+                console.log("测试结果已保存到 localStorage:", testResults);
+
+                // 显示提示信息
+                alert("已经把测试结果提交给AI以便于更好的针对性的提建议");
+
+                // 跳转到聊天页面
+                window.location.href = 'chat.html';
+            } catch (error) {
+                console.error("保存结果或跳转时出错:", error);
+                alert("处理结果时发生错误，请稍后重试。");
+            }
+        };
+
+        // 修改“开始对话”按钮的 onclick 事件
+        // 在 HTML 中找到这个按钮并确保它调用的是 startChatWithAlert()
+        // <button class="nav-button" onclick="startChatWithAlert()">开始对话</button>
+
+
+        // ... a lot of existing code ...
+
+        // 重置测试
+        window.resetTest = function() {
+            console.log("重置测试...");
+            // 清除答案和状态
+            window.currentSection = 'mbti';
+            window.currentQuestionIndex = 0;
+            window.answers = { mbti: [], disc: [], bigFive: [] };
+            testResults = {}; // 清空全局结果变量
+            localStorage.removeItem('personalityResults'); // 清除本地存储的结果
+            localStorage.removeItem('selectedRole'); // 清除本地存储的角色
+
+            // 隐藏结果，显示角色选择
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('roleSelection').style.display = 'flex'; // 显示角色选择
+
+            // 重置进度条
+            document.getElementById('progressBar').style.width = '0%';
+            console.log("测试已重置。");
+        };
+
+        // ... existing code ...
+
+    </script>
+</body>
+</html>
